@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ServersOnFire — přihlášení</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="login-body">
+  <form class="login-card" method="post" action="/login">
+    <h1>🔥 ServersOnFire</h1>
+    <p class="subtitle">FireIT infrastruktura</p>
+    <div id="login-error" class="error-box" hidden>Špatné uživatelské jméno nebo heslo.</div>
+    <label>Uživatel
+      <input type="text" name="username" autocomplete="username" required autofocus>
+    </label>
+    <label>Heslo
+      <input type="password" name="password" autocomplete="current-password" required>
+    </label>
+    <button type="submit">Přihlásit se</button>
+  </form>
+  <script>
+    if (new URLSearchParams(location.search).get('error')) {
+      document.getElementById('login-error').hidden = false;
+    }
+  </script>
+</body>
+</html>

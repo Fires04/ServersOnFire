@@ -24,7 +24,17 @@ export default function App() {
   const [refreshing, setRefreshing] = useState(false)
   const [search, setSearch] = useState('')
   const [kind, setKind] = useState<KindFilter>('all')
-  const [selected, setSelected] = useState<Server | null>(null)
+  const [modalServer, setModalServer] = useState<Server | null>(null)
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+
+  function toggleExpand(id: string) {
+    setExpandedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   async function load() {
     const res = await api.data()
@@ -55,7 +65,19 @@ export default function App() {
     return servers.filter((s) => {
       if (kind !== 'all' && s.kind !== kind) return false
       if (!needle) return true
-      const haystack = [s.name, s.role, s.site_name, s.tenant_name, ...s.tags].join(' ').toLowerCase()
+      // Searches into each server's own services and tags too — typing
+      // "kasm" should surface the server that runs that service, not just
+      // servers named/tagged "kasm".
+      const haystack = [
+        s.name,
+        s.role,
+        s.site_name,
+        s.tenant_name,
+        ...s.tags.map((t) => t.name),
+        ...s.services.map((svc) => svc.name),
+      ]
+        .join(' ')
+        .toLowerCase()
       return haystack.includes(needle)
     })
   }, [servers, search, kind])
@@ -112,14 +134,27 @@ export default function App() {
           No servers match.
         </Text>
       ) : (
-        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md" mt="md">
+        <SimpleGrid
+          cols={{ base: 1, sm: 2, lg: 3 }}
+          spacing="md"
+          mt="md"
+          // Without this, expanding one card stretches every card sharing
+          // its grid row to match (CSS grid's default align-items: stretch).
+          style={{ alignItems: 'start' }}
+        >
           {filtered.map((server) => (
-            <ServerCard key={server.id} server={server} onClick={() => setSelected(server)} />
+            <ServerCard
+              key={server.id}
+              server={server}
+              expanded={expandedIds.has(server.id)}
+              onToggleExpand={() => toggleExpand(server.id)}
+              onOpenModal={() => setModalServer(server)}
+            />
           ))}
         </SimpleGrid>
       )}
 
-      <ServerDetailModal server={selected} onClose={() => setSelected(null)} />
+      <ServerDetailModal server={modalServer} onClose={() => setModalServer(null)} />
     </Container>
   )
 }

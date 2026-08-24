@@ -27,6 +27,12 @@ export interface ServerParams {
   disk_gb?: number
 }
 
+export interface Tag {
+  name: string
+  /** 6-hex-digit NetBox tag color, no leading '#' (empty string if unset). */
+  color: string
+}
+
 export interface Server {
   id: string
   kind: 'device' | 'vm'
@@ -36,10 +42,14 @@ export interface Server {
   site_name: string | null
   tenant_name: string | null
   primary_ip: string | null
-  tags: string[]
+  tags: Tag[]
   params: ServerParams
   services: Service[]
   backup: BackupInfo | null
+  /** Best-effort dashboard-icons slug derived from the platform name, or
+   * null if there's no platform to guess from. May not resolve to a real
+   * icon — always render with a fallback (see ServerIcon.tsx). */
+  icon_slug: string | null
 }
 
 export interface Dataset {

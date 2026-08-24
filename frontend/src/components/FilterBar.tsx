@@ -17,7 +17,7 @@ export default function FilterBar({
   return (
     <Group gap="sm" wrap="wrap">
       <TextInput
-        placeholder="Search servers, roles, sites, tags…"
+        placeholder="Search servers, services, roles, sites, tags…"
         leftSection={<IconSearch size={16} />}
         value={search}
         onChange={(e) => onSearchChange(e.currentTarget.value)}

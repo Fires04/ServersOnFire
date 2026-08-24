@@ -6,6 +6,11 @@ interface Row {
   value: string
 }
 
+function formatDisk(gb: number): string {
+  if (gb >= 1024) return `${(gb / 1024).toFixed(1)} TB`
+  return `${gb} GB`
+}
+
 // Only ever shows fields NetBox actually returned — no field is invented
 // or defaulted to a placeholder (see backend/app/dataset.py).
 function rowsFor(server: Server): Row[] {
@@ -18,7 +23,7 @@ function rowsFor(server: Server): Row[] {
   if (p.hypervisor) rows.push({ label: 'Hypervisor', value: p.hypervisor })
   if (p.vcpus !== undefined) rows.push({ label: 'vCPUs', value: String(p.vcpus) })
   if (p.memory_mb !== undefined) rows.push({ label: 'Memory', value: `${(p.memory_mb / 1024).toFixed(1)} GB` })
-  if (p.disk_gb !== undefined) rows.push({ label: 'Disk', value: `${p.disk_gb} GB` })
+  if (p.disk_gb !== undefined) rows.push({ label: 'Disk', value: formatDisk(p.disk_gb) })
   if (server.primary_ip) rows.push({ label: 'Primary IP', value: server.primary_ip })
   if (server.site_name) rows.push({ label: 'Site', value: server.site_name })
   if (server.tenant_name) rows.push({ label: 'Tenant', value: server.tenant_name })

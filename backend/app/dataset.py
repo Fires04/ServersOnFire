@@ -162,7 +162,9 @@ def _base_server(obj: dict, kind: str) -> dict:
         "site_name": site.get("name") if site else None,
         "tenant_name": tenant.get("name") if tenant else None,
         "primary_ip": _strip_prefix((obj.get("primary_ip4") or {}).get("address")),
-        "tags": [t["name"] for t in obj.get("tags") or []],
+        # NetBox tag color is a 6-hex-digit string with no leading '#'
+        # (e.g. "aa1409") — passed through as-is, the frontend prefixes it.
+        "tags": [{"name": t["name"], "color": t.get("color") or ""} for t in obj.get("tags") or []],
     }
 
 
@@ -181,6 +183,7 @@ def build_servers(devices: list[dict], vms: list[dict], services: list[dict]) ->
         server["params"] = _device_params(d)
         server["services"] = services_by_host.get(("device", d["id"]), [])
         server["backup"] = _backup_info(d, names)
+        server["icon_slug"] = icons.platform_icon_slug(server["params"].get("platform"))
         servers.append(server)
 
     for v in vms:
@@ -190,6 +193,7 @@ def build_servers(devices: list[dict], vms: list[dict], services: list[dict]) ->
         server["params"] = _vm_params(v, cluster_hosts)
         server["services"] = services_by_host.get(("vm", v["id"]), [])
         server["backup"] = _backup_info(v, names)
+        server["icon_slug"] = icons.platform_icon_slug(server["params"].get("platform"))
         servers.append(server)
 
     servers.sort(key=lambda s: s["name"].lower())

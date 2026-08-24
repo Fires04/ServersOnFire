@@ -107,3 +107,25 @@ def test_vm_hypervisor_resolved_via_shared_cluster():
     servers = dataset.build_servers([host], [vm], [])
     guest = next(s for s in servers if s["name"] == "guest-vm")
     assert guest["params"]["hypervisor"] == "pve-host"
+
+
+def test_tag_color_passed_through():
+    d = _device(1, "colored-host")
+    d["tags"] = [
+        {"name": "netmap", "slug": "netmap", "color": ""},  # keeps it visible
+        {"name": "prod", "slug": "prod", "color": "aa1409"},
+    ]
+    servers = dataset.build_servers([d], [], [])
+    assert {"name": "prod", "color": "aa1409"} in servers[0]["tags"]
+
+
+def test_platform_icon_resolved_by_substring_hint():
+    d = _device(1, "pve-host", extra={"platform": {"name": "Proxmox VE 9.2"}})
+    servers = dataset.build_servers([d], [], [])
+    assert servers[0]["icon_slug"] == "proxmox"
+
+
+def test_no_platform_means_no_icon_guess():
+    d = _device(1, "bare-host")
+    servers = dataset.build_servers([d], [], [])
+    assert servers[0]["icon_slug"] is None

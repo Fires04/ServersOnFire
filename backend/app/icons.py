@@ -44,3 +44,40 @@ def icon_slug(service_name: str) -> str:
         return ICON_OVERRIDES[key]
     slug = re.sub(r"[^a-z0-9]+", "-", key).strip("-")
     return slug
+
+
+# Platform names from NetBox carry free-text versions ("Debian 13 (trixie)",
+# "Proxmox VE 9.2") that would never match a dashboard-icons slug as-is —
+# unlike service names, these are matched by substring rather than an exact
+# lookup. Ordered so a more specific hint (e.g. "proxmox backup") is checked
+# before a shorter one it would otherwise also match ("proxmox").
+PLATFORM_ICON_HINTS: list[tuple[str, str]] = [
+    ("proxmox backup", "proxmox"),
+    ("proxmox", "proxmox"),
+    ("synology", "synology-dsm"),
+    ("dsm", "synology-dsm"),
+    ("home assistant", "home-assistant"),
+    ("truenas", "truenas"),
+    ("opnsense", "opnsense"),
+    ("pfsense", "pfsense"),
+    ("debian", "debian"),
+    ("ubuntu", "ubuntu"),
+    ("alpine", "alpine-linux"),
+    ("windows", "windows"),
+    ("docker", "docker"),
+]
+
+
+def platform_icon_slug(platform_name: str | None) -> str | None:
+    """Best-effort icon for a server's platform. No curated hint matches ->
+    fall back to the same slugify as icon_slug() (might still hit a real
+    dashboard-icons slug, e.g. a short/clean platform name); the frontend
+    already degrades a missing icon gracefully (see ServiceRow), so a wrong
+    guess here is harmless."""
+    if not platform_name:
+        return None
+    key = platform_name.strip().lower()
+    for hint, slug in PLATFORM_ICON_HINTS:
+        if hint in key:
+            return slug
+    return icon_slug(platform_name)

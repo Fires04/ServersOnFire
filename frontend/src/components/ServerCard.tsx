@@ -104,7 +104,7 @@ export default function ServerCard({
       <Collapse expanded={expanded}>
         <Divider my="sm" />
         <div onClick={(e) => e.stopPropagation()}>
-          <ServerDetailContent server={server} />
+          <ServerDetailContent server={server} showTags={false} />
         </div>
       </Collapse>
     </Card>

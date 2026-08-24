@@ -7,11 +7,22 @@ import TagBadges from './TagBadges'
 
 /** The full per-server detail body — tags, parameters, backup, services.
  * Shared between ServerDetailModal (the popup) and ServerCard's in-place
- * expand, so the two stay in sync instead of drifting apart. */
-export default function ServerDetailContent({ server }: { server: Server }) {
+ * expand, so the two stay in sync instead of drifting apart.
+ *
+ * `showTags` defaults on for the modal, where tags aren't shown anywhere
+ * else. ServerCard's inline expand passes false — its collapsed header
+ * already shows the same tags right above, so repeating them here just
+ * duplicated the badge (see feedback screenshot). */
+export default function ServerDetailContent({
+  server,
+  showTags = true,
+}: {
+  server: Server
+  showTags?: boolean
+}) {
   return (
     <Stack gap="md">
-      <TagBadges tags={server.tags} />
+      {showTags && <TagBadges tags={server.tags} />}
 
       <ParametersGrid server={server} />
 

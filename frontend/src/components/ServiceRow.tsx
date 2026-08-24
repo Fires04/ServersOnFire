@@ -1,14 +1,19 @@
-import { Anchor, Group, Text, ThemeIcon, Tooltip } from '@mantine/core'
+import { ActionIcon, Group, Text, ThemeIcon, Tooltip } from '@mantine/core'
+import { IconHome2, IconWorld } from '@tabler/icons-react'
 import type { Service } from '../types'
 import { serviceStatusColor } from '../theme'
 
 const ICON_BASE = 'https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg'
 
+// Separate LAN/Outside buttons at the row's end (mirrors netmap's
+// app.js — 🏠 LAN / 🌐 Outside pill buttons) rather than making the whole
+// row one link to whichever URL happened to be set: a service can have
+// both an internal and an external URL, and burying the second one meant
+// there was no way to reach it at all (see feedback screenshot).
 export default function ServiceRow({ service }: { service: Service }) {
-  const url = service.internal_url || service.external_url
   const statusLabel = service.up === null ? 'not monitored' : service.up ? 'up' : 'down'
 
-  const body = (
+  return (
     <Group gap="xs" wrap="nowrap">
       <Tooltip label={statusLabel}>
         <ThemeIcon
@@ -36,15 +41,39 @@ export default function ServiceRow({ service }: { service: Service }) {
           :{service.ports.join(', ')}
         </Text>
       )}
-    </Group>
-  )
 
-  if (!url) {
-    return body
-  }
-  return (
-    <Anchor href={url} target="_blank" rel="noreferrer" underline="never" c="inherit">
-      {body}
-    </Anchor>
+      <Group gap={4} wrap="nowrap" ml="auto" style={{ flexShrink: 0 }}>
+        {service.internal_url && (
+          <Tooltip label="Open on LAN">
+            <ActionIcon
+              component="a"
+              href={service.internal_url}
+              target="_blank"
+              rel="noreferrer"
+              variant="subtle"
+              color="gray"
+              size="sm"
+            >
+              <IconHome2 size={14} />
+            </ActionIcon>
+          </Tooltip>
+        )}
+        {service.external_url && (
+          <Tooltip label="Open externally">
+            <ActionIcon
+              component="a"
+              href={service.external_url}
+              target="_blank"
+              rel="noreferrer"
+              variant="subtle"
+              color="gray"
+              size="sm"
+            >
+              <IconWorld size={14} />
+            </ActionIcon>
+          </Tooltip>
+        )}
+      </Group>
+    </Group>
   )
 }

@@ -1,4 +1,5 @@
-import { SimpleGrid, Text } from '@mantine/core'
+import { Fragment } from 'react'
+import { Text } from '@mantine/core'
 import type { Server } from '../types'
 
 interface Row {
@@ -31,20 +32,36 @@ function rowsFor(server: Server): Row[] {
   return rows
 }
 
+// A single column of label/value rows on a fixed-width label column, not
+// the previous 2-across grid of "Label: value" inline text — that let a
+// long value (e.g. "Debian 13 (trixie)") wrap onto its own second line
+// with nothing to align it to, so the two columns drifted out of step with
+// each other and got hard to scan (see feedback screenshot: "Nepřehledné").
+// A single aligned column reads top-to-bottom cleanly regardless of how
+// many values wrap.
 export default function ParametersGrid({ server }: { server: Server }) {
   const rows = rowsFor(server)
   if (rows.length === 0) return null
 
   return (
-    <SimpleGrid cols={2} spacing="xs" verticalSpacing={4}>
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'max-content 1fr',
+        columnGap: 12,
+        rowGap: 6,
+      }}
+    >
       {rows.map((row) => (
-        <Text key={row.label} size="sm" span>
-          <Text span c="dimmed">
-            {row.label}:{' '}
+        <Fragment key={row.label}>
+          <Text size="sm" c="dimmed">
+            {row.label}
           </Text>
-          {row.value}
-        </Text>
+          <Text size="sm" fw={500}>
+            {row.value}
+          </Text>
+        </Fragment>
       ))}
-    </SimpleGrid>
+    </div>
   )
 }

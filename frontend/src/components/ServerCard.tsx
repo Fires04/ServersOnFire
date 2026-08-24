@@ -21,13 +21,20 @@ export default function ServerCard({
     <Card withBorder radius="md" p="md">
       <Stack gap="xs" onClick={onToggleExpand} style={{ cursor: 'pointer' }}>
         <Group justify="space-between" wrap="nowrap">
-          <Group gap="xs" wrap="nowrap" style={{ minWidth: 0 }}>
+          <Group gap="xs" wrap="nowrap" style={{ minWidth: 0, flexShrink: 1 }}>
             <ServerIcon server={server} />
-            <Text fw={600} truncate>
-              {server.name}
-            </Text>
+            <Tooltip label={server.name} openDelay={400} disabled={server.name.length < 22}>
+              <Text fw={600} truncate>
+                {server.name}
+              </Text>
+            </Tooltip>
           </Group>
-          <Group gap={4} wrap="nowrap">
+          {/* flexShrink: 0 so the status badge and maximize icon never get
+              compressed by a long name — all the squeeze belongs on the
+              truncating name above, not here (a badge/icon shrinking just
+              silently truncates its own label into "ACTI…", which reads as
+              broken rather than intentional). */}
+          <Group gap={4} wrap="nowrap" style={{ flexShrink: 0 }}>
             <Badge color={serverStatusColor(server.status)} variant="light" size="sm">
               {server.status || 'unknown'}
             </Badge>

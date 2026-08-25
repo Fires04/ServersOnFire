@@ -8,4 +8,60 @@
 
 body {
   margin: 0;
+  /* Very faint flame-tinted glow behind the header instead of a flat
+     background — subtle enough to stay out of the way of card contrast in
+     both color schemes, but it's the difference between "themed app" and
+     "default Mantine app". Fixed so it doesn't scroll away with content. */
+  background-image: radial-gradient(
+    ellipse 1200px 500px at 50% -100px,
+    rgba(255, 106, 61, 0.16),
+    transparent 70%
+  );
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+/* Server cards: lift + brighten border on hover so the grid reads as
+   interactive before the user even clicks. Kept to transform/box-shadow
+   (no layout properties) so it never triggers reflow of neighboring
+   cards. */
+.sof-card {
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    border-color 120ms ease;
+}
+
+.sof-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--mantine-color-flame-5);
+  box-shadow: var(--mantine-shadow-md);
+}
+
+/* Stat strip tiles double as filter toggles (see StatStrip.tsx) — the
+   hover state is what tells you they're clickable at all. */
+.sof-stat {
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease;
+}
+
+.sof-stat:hover {
+  border-color: var(--mantine-color-flame-5);
+}
+
+/* Small filled/outline dot used next to status badges for an at-a-glance
+   "is this alive" signal. Only the "good" states pulse — a pulsing red dot
+   for every offline server would turn the whole grid into a distraction. */
+@keyframes sof-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(45, 194, 145, 0.55);
+  }
+  100% {
+    box-shadow: 0 0 0 6px rgba(45, 194, 145, 0);
+  }
+}
+
+.sof-dot-live {
+  animation: sof-pulse 1.8s ease-out infinite;
 }

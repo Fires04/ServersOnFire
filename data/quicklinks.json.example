@@ -1,0 +1,14 @@
+[
+  {
+    "name": "NetBox",
+    "url": "https://netbox.example.lan",
+    "icon": "netbox",
+    "order": 1
+  },
+  {
+    "name": "Grafana",
+    "url": "https://grafana.example.lan",
+    "icon": "grafana",
+    "order": 2
+  }
+]

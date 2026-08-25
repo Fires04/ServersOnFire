@@ -2,8 +2,7 @@ import { useState } from 'react'
 import { ThemeIcon } from '@mantine/core'
 import { IconServer, IconServer2 } from '@tabler/icons-react'
 import type { Server } from '../types'
-
-const ICON_BASE = 'https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg'
+import { ICON_BASE } from '../lib/icons'
 
 /** Same img-with-onError-fallback pattern as ServiceRow's icon — a guessed
  * platform slug that doesn't exist in dashboard-icons degrades to the

@@ -10,3 +10,9 @@ services:
       - "8092:8000"
     env_file:
       - .env
+    volumes:
+      # Hand-maintained data that must survive `docker compose up --build`
+      # (a rebuild recreates the image from scratch, wiping anything only
+      # written inside it) — currently just quicklinks.json. See
+      # backend/app/quicklinks.py.
+      - ./data:/app/data

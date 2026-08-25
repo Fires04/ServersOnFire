@@ -1,4 +1,5 @@
 .env
+data/quicklinks.json
 .venv/
 __pycache__/
 *.pyc

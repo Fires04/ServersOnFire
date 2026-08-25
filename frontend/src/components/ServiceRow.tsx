@@ -2,8 +2,7 @@ import { ActionIcon, Group, Text, ThemeIcon, Tooltip } from '@mantine/core'
 import { IconHome2, IconWorld } from '@tabler/icons-react'
 import type { Service } from '../types'
 import { serviceStatusColor } from '../theme'
-
-const ICON_BASE = 'https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg'
+import { ICON_BASE } from '../lib/icons'
 
 // Separate LAN/Outside buttons at the row's end (mirrors netmap's
 // app.js — 🏠 LAN / 🌐 Outside pill buttons) rather than making the whole

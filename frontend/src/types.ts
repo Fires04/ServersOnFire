@@ -57,7 +57,22 @@ export interface Dataset {
   servers: Server[]
 }
 
+/** One entry in the hand-edited data/quicklinks.json — external projects
+ * that aren't NetBox inventory (see HelpPanel). `icon` is a dashboard-icons
+ * slug, same convention as Service.icon_slug. `order` is optional; entries
+ * without it sort after ones that have it, by array position. */
+export interface QuickLink {
+  name: string
+  url: string
+  icon?: string
+  order?: number
+}
+
 export interface ApiData {
   dataset: Dataset | null
   last_error: string | null
+  /** NetBox tag (config.DISPLAY_TAG) that a device/VM must carry to show up
+   * here at all — surfaced so HelpPanel's cheatsheet stays correct even if
+   * an instance overrides the default. */
+  display_tag: string
 }

@@ -18,7 +18,7 @@ export default function ServerCard({
   onOpenModal: () => void
 }) {
   return (
-    <Card withBorder radius="md" p="md">
+    <Card withBorder radius="md" p="md" className="sof-card">
       <Stack gap="xs" onClick={onToggleExpand} style={{ cursor: 'pointer' }}>
         <Group justify="space-between" wrap="nowrap">
           <Group gap="xs" wrap="nowrap" style={{ minWidth: 0, flexShrink: 1 }}>
@@ -35,7 +35,27 @@ export default function ServerCard({
               silently truncates its own label into "ACTI…", which reads as
               broken rather than intentional). */}
           <Group gap={4} wrap="nowrap" style={{ flexShrink: 0 }}>
-            <Badge color={serverStatusColor(server.status)} variant="light" size="sm">
+            <Badge
+              color={serverStatusColor(server.status)}
+              variant="light"
+              size="sm"
+              // The soft pulse is reserved for "active" — a calm signal that
+              // this card is live, not an alarm. Every other status (including
+              // "unknown") stays static so attention isn't spent on offline
+              // hosts that already say so in plain text.
+              leftSection={
+                <span
+                  className={server.status === 'active' ? 'sof-dot-live' : undefined}
+                  style={{
+                    display: 'inline-block',
+                    width: 6,
+                    height: 6,
+                    borderRadius: '50%',
+                    background: 'currentColor',
+                  }}
+                />
+              }
+            >
               {server.status || 'unknown'}
             </Badge>
             <Tooltip label="Open detail">

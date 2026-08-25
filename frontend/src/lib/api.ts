@@ -2,7 +2,7 @@
  * No JWT/CSRF machinery — that's overkill for a cookie-session,
  * single-operator dashboard (see FiresLog's lib/api.ts for the fuller
  * version this is trimmed from). */
-import type { ApiData } from '../types'
+import type { ApiData, QuickLink } from '../types'
 
 export class ApiError extends Error {
   status: number
@@ -35,4 +35,11 @@ async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
 export const api = {
   data: () => apiFetch<ApiData>('/api/data'),
   refresh: () => apiFetch<ApiData>('/api/refresh', { method: 'POST' }),
+  quicklinks: () => apiFetch<QuickLink[]>('/api/quicklinks'),
+  saveQuicklinks: (links: QuickLink[]) =>
+    apiFetch<QuickLink[]>('/api/quicklinks', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(links),
+    }),
 }

@@ -9,7 +9,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Redirect
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import auth, config, netbox
+from . import auth, config, netbox, quicklinks
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("serversonfire")
@@ -103,8 +103,34 @@ async def api_data(request: Request):
         {
             "dataset": state["dataset"],
             "last_error": state["last_error"],
+            # Surfaced so the frontend's NetBox cheatsheet (HelpPanel) can
+            # name the real configured tag instead of hardcoding "netmap"
+            # and silently going stale if DISPLAY_TAG is ever overridden.
+            "display_tag": config.DISPLAY_TAG,
         }
     )
+
+
+@app.get("/api/quicklinks")
+async def api_quicklinks(request: Request):
+    if config.REQUIRE_LOGIN:
+        auth.require_login_api(request)
+    return JSONResponse(quicklinks.load())
+
+
+@app.put("/api/quicklinks")
+async def api_quicklinks_update(request: Request):
+    """Full-replace, not a per-item patch — the frontend editor always
+    holds and submits the whole (short) list, so there's no id scheme to
+    keep in sync between client and file."""
+    if config.REQUIRE_LOGIN:
+        auth.require_login_api(request)
+    body = await request.json()
+    if not isinstance(body, list):
+        return JSONResponse({"detail": "Expected a JSON array of links"}, status_code=400)
+    cleaned = quicklinks.normalize(body)
+    quicklinks.save(cleaned)
+    return JSONResponse(cleaned)
 
 
 @app.post("/api/refresh")
@@ -112,4 +138,20 @@ async def api_refresh(request: Request):
     if config.REQUIRE_LOGIN:
         auth.require_login_api(request)
     await refresh_dataset()
-    return JSONResponse({"dataset": state["dataset"], "last_error": state["last_error"]})
+    return JSONResponse(
+        {
+            "dataset": state["dataset"],
+            "last_error": state["last_error"],
+            "display_tag": config.DISPLAY_TAG,
+        }
+    )
+
+
+# Fallback for anything else the frontend build dropped straight into
+# dist/'s root (favicon.png, logo.png, ...) — from Vite's public/ dir, so
+# there's no per-file route to add here as more show up. Mounted last so
+# every explicit route above (including "/") still wins first; Starlette
+# tries mounts/routes in registration order and this only catches what
+# nothing else matched.
+if DIST_DIR.is_dir():
+    app.mount("/", StaticFiles(directory=DIST_DIR, html=False), name="dist-root")

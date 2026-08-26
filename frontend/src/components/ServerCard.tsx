@@ -26,12 +26,30 @@ export default function ServerCard({
    * wash of color. */
   groupColor?: GroupColor
 }) {
-  const groupBorder = groupColor
-    ? `3px solid var(--mantine-color-${groupColor.color}-${groupColor.role === 'host' ? 6 : 3})`
-    : undefined
-
   return (
-    <Card withBorder radius="md" p="md" className="sof-card" style={{ borderLeft: groupBorder }}>
+    <Card withBorder radius="md" p="md" className="sof-card" style={{ position: 'relative', overflow: 'hidden' }}>
+      {groupColor && (
+        // A short diagonal line clipped into the top-left corner by the
+        // card's own overflow:hidden — solid for the host, dashed for its
+        // VMs, both the *same* shade of the same color. Two shades of one
+        // color (the previous version) still just reads as "these cards
+        // happen to have different colors"; same color + a different line
+        // style reads as "same group, different role" instead.
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            top: 15,
+            left: -18,
+            width: 52,
+            height: 0,
+            transform: 'rotate(-45deg)',
+            transformOrigin: 'left center',
+            borderTop: `3px ${groupColor.role === 'host' ? 'solid' : 'dashed'} var(--mantine-color-${groupColor.color}-6)`,
+            pointerEvents: 'none',
+          }}
+        />
+      )}
       <Stack gap="xs" onClick={onToggleExpand} style={{ cursor: 'pointer' }}>
         <Group justify="space-between" wrap="nowrap">
           <Group gap="xs" wrap="nowrap" style={{ minWidth: 0, flexShrink: 1 }}>

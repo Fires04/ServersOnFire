@@ -43,7 +43,12 @@ export default function ServerCard({
             left: -18,
             width: 52,
             height: 0,
-            transform: 'rotate(-45deg)',
+            // Positive = clockwise, sweeping the line from off the
+            // top-left corner down-and-right into the card. -45deg (the
+            // first attempt) sent it the other way, off the *top* edge
+            // entirely — clipped to nothing by overflow:hidden, hence
+            // "I don't see anything at all".
+            transform: 'rotate(45deg)',
             transformOrigin: 'left center',
             borderTop: `3px ${groupColor.role === 'host' ? 'solid' : 'dashed'} var(--mantine-color-${groupColor.color}-6)`,
             pointerEvents: 'none',

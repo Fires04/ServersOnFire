@@ -1,7 +1,6 @@
 /** Trimmed fetch helper: same-origin cookies, redirect to /login on 401.
  * No JWT/CSRF machinery — that's overkill for a cookie-session,
- * single-operator dashboard (see FiresLog's lib/api.ts for the fuller
- * version this is trimmed from). */
+ * single-operator dashboard. */
 import type { ApiData, QuickLink } from '../types'
 
 export class ApiError extends Error {

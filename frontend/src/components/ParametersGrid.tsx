@@ -36,7 +36,7 @@ function rowsFor(server: Server): Row[] {
 // the previous 2-across grid of "Label: value" inline text — that let a
 // long value (e.g. "Debian 13 (trixie)") wrap onto its own second line
 // with nothing to align it to, so the two columns drifted out of step with
-// each other and got hard to scan (see feedback screenshot: "Nepřehledné").
+// each other and got hard to scan (see feedback screenshot: "cluttered").
 // A single aligned column reads top-to-bottom cleanly regardless of how
 // many values wrap.
 export default function ParametersGrid({ server }: { server: Server }) {

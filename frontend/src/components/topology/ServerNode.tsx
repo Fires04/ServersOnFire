@@ -59,12 +59,11 @@ export default function ServerNode({ data }: NodeProps<ServerNode>) {
           }}
         />
         <ServerIcon server={server} size={20} />
-        {/* Two-line wrap instead of single-line truncate — "Housing-Host-
-            1-Charlie" ellipsized into "Housing-H…" defeats the whole point
-            of a topology view (knowing which box is which host at a
-            glance). The line-clamp is just a backstop for the rare name
-            that still doesn't fit in two lines; the tooltip covers that
-            case. */}
+        {/* Two-line wrap instead of single-line truncate — a long hostname
+            ellipsized into "Housing-H…" defeats the whole point of a
+            topology view (knowing which box is which host at a glance).
+            The line-clamp is just a backstop for the rare name that still
+            doesn't fit in two lines; the tooltip covers that case. */}
         <Tooltip label={server.name} openDelay={400} disabled={server.name.length < 26}>
           <Text
             size="sm"

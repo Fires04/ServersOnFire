@@ -74,7 +74,32 @@ export default function App() {
   const [view, setView] = useState<ViewMode>(() => paramValue('view', VIEW_MODES, 'cards'))
   const [modalServer, setModalServer] = useState<Server | null>(null)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const searchRef = useRef<HTMLInputElement>(null)
+  // Wraps the stat strip + filter bar + topology canvas together — the
+  // Fullscreen API only affects the one element it's called on, and the
+  // whole point of this button is that the filters stay usable while the
+  // canvas fills the screen, so that element has to be a shared ancestor
+  // of both rather than just the canvas.
+  const fullscreenSectionRef = useRef<HTMLDivElement>(null)
+
+  function toggleFullscreen() {
+    if (document.fullscreenElement) {
+      document.exitFullscreen()
+    } else {
+      fullscreenSectionRef.current?.requestFullscreen()
+    }
+  }
+
+  // Stay in sync when fullscreen is exited some other way (Esc, browser
+  // chrome) instead of via our own button.
+  useEffect(() => {
+    function onFullscreenChange() {
+      setIsFullscreen(!!document.fullscreenElement)
+    }
+    document.addEventListener('fullscreenchange', onFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', onFullscreenChange)
+  }, [])
 
   // Keep the URL in sync as filters/view change. replaceState (not push)
   // so typing a search doesn't spam the browser back-button history —
@@ -293,110 +318,128 @@ export default function App() {
         </Alert>
       )}
 
-      {servers && servers.length > 0 && (
-        <StatStrip
-          servers={servers}
-          filter={statFilter}
-          onFilterChange={setStatFilter}
-          onResetAll={resetAllFilters}
-        />
-      )}
-
-      <Group gap="sm" wrap="wrap" align="center">
-        {/* flex: 1 so this block still claims the row's full width like it
-            did before "Clear filters" was added as a sibling — without it,
-            FilterBar's own internal flex:1 on the search input only grows
-            within FilterBar's now content-sized box, and the whole row
-            collapses/floats left instead of spanning it. */}
-        <div style={{ flex: 1, minWidth: 260 }}>
-          <FilterBar
-            ref={searchRef}
-            search={search}
-            onSearchChange={setSearch}
-            kind={kind}
-            onKindChange={setKind}
-            site={site}
-            onSiteChange={setSite}
-            siteOptions={siteOptions}
-            sort={sort}
-            onSortChange={setSort}
+      <div
+        ref={fullscreenSectionRef}
+        style={
+          isFullscreen
+            ? {
+                background: 'var(--mantine-color-body)',
+                height: '100vh',
+                display: 'flex',
+                flexDirection: 'column',
+                padding: 16,
+                overflow: 'auto',
+              }
+            : undefined
+        }
+      >
+        {servers && servers.length > 0 && (
+          <StatStrip
+            servers={servers}
+            filter={statFilter}
+            onFilterChange={setStatFilter}
+            onResetAll={resetAllFilters}
           />
-        </div>
-        {hasActiveFilters && (
-          <Button
-            variant="subtle"
-            color="gray"
-            size="xs"
-            leftSection={<IconX size={14} />}
-            onClick={resetAllFilters}
-          >
-            Clear filters
-          </Button>
         )}
-      </Group>
 
-      {servers === null ? (
-        view === 'topology' || view === 'services' ? (
-          <Skeleton height={560} radius="md" mt="md" />
+        <Group gap="sm" wrap="wrap" align="center">
+          {/* flex: 1 so this block still claims the row's full width like it
+              did before "Clear filters" was added as a sibling — without it,
+              FilterBar's own internal flex:1 on the search input only grows
+              within FilterBar's now content-sized box, and the whole row
+              collapses/floats left instead of spanning it. */}
+          <div style={{ flex: 1, minWidth: 260 }}>
+            <FilterBar
+              ref={searchRef}
+              search={search}
+              onSearchChange={setSearch}
+              kind={kind}
+              onKindChange={setKind}
+              site={site}
+              onSiteChange={setSite}
+              siteOptions={siteOptions}
+              sort={sort}
+              onSortChange={setSort}
+            />
+          </div>
+          {hasActiveFilters && (
+            <Button
+              variant="subtle"
+              color="gray"
+              size="xs"
+              leftSection={<IconX size={14} />}
+              onClick={resetAllFilters}
+            >
+              Clear filters
+            </Button>
+          )}
+        </Group>
+
+        {servers === null ? (
+          view === 'topology' || view === 'services' ? (
+            <Skeleton height={560} radius="md" mt="md" />
+          ) : (
+            <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md" mt="md">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Stack key={i} gap="xs" p="md" style={{ border: '1px solid var(--mantine-color-default-border)', borderRadius: 'var(--mantine-radius-md)' }}>
+                  <Group gap="xs">
+                    <Skeleton height={28} width={28} radius="md" />
+                    <Skeleton height={16} width="50%" />
+                  </Group>
+                  <Skeleton height={12} width="70%" />
+                  <Skeleton height={12} width="40%" />
+                </Stack>
+              ))}
+            </SimpleGrid>
+          )
+        ) : filtered.length === 0 ? (
+          <Text c="dimmed" mt="xl" ta="center">
+            No servers match.
+          </Text>
+        ) : view === 'topology' ? (
+          <div style={{ marginTop: 16, ...(isFullscreen ? { flex: 1, minHeight: 0 } : {}) }}>
+            <Suspense fallback={<Skeleton height={560} radius="md" />}>
+              {/* Keying on the visible server ids (in order) forces a full
+                  remount whenever search/filter/sort actually changes what's
+                  shown — see TopologyView's own comment for why that's what
+                  makes it re-fit the viewport to just the current selection
+                  instead of leaving pan/zoom wherever it was. */}
+              <TopologyView
+                key={filtered.map((s) => s.id).join('|')}
+                servers={filtered}
+                onOpenServer={setModalServer}
+                isFullscreen={isFullscreen}
+                onToggleFullscreen={toggleFullscreen}
+              />
+            </Suspense>
+          </div>
+        ) : view === 'services' ? (
+          <ServicesView
+            servers={filtered}
+            onlyDown={statFilter === 'servicesDown'}
+            onOpenServer={setModalServer}
+          />
         ) : (
-          <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md" mt="md">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Stack key={i} gap="xs" p="md" style={{ border: '1px solid var(--mantine-color-default-border)', borderRadius: 'var(--mantine-radius-md)' }}>
-                <Group gap="xs">
-                  <Skeleton height={28} width={28} radius="md" />
-                  <Skeleton height={16} width="50%" />
-                </Group>
-                <Skeleton height={12} width="70%" />
-                <Skeleton height={12} width="40%" />
-              </Stack>
+          <SimpleGrid
+            cols={{ base: 1, sm: 2, lg: 3 }}
+            spacing="md"
+            mt="md"
+            // Without this, expanding one card stretches every card sharing
+            // its grid row to match (CSS grid's default align-items: stretch).
+            style={{ alignItems: 'start' }}
+          >
+            {filtered.map((server) => (
+              <ServerCard
+                key={server.id}
+                server={server}
+                expanded={expandedIds.has(server.id)}
+                onToggleExpand={() => toggleExpand(server.id)}
+                onOpenModal={() => setModalServer(server)}
+              />
             ))}
           </SimpleGrid>
-        )
-      ) : filtered.length === 0 ? (
-        <Text c="dimmed" mt="xl" ta="center">
-          No servers match.
-        </Text>
-      ) : view === 'topology' ? (
-        <div style={{ marginTop: 16 }}>
-          <Suspense fallback={<Skeleton height={560} radius="md" />}>
-            {/* Keying on the visible server ids (in order) forces a full
-                remount whenever search/filter/sort actually changes what's
-                shown — see TopologyView's own comment for why that's what
-                makes it re-fit the viewport to just the current selection
-                instead of leaving pan/zoom wherever it was. */}
-            <TopologyView
-              key={filtered.map((s) => s.id).join('|')}
-              servers={filtered}
-              onOpenServer={setModalServer}
-            />
-          </Suspense>
-        </div>
-      ) : view === 'services' ? (
-        <ServicesView
-          servers={filtered}
-          onlyDown={statFilter === 'servicesDown'}
-          onOpenServer={setModalServer}
-        />
-      ) : (
-        <SimpleGrid
-          cols={{ base: 1, sm: 2, lg: 3 }}
-          spacing="md"
-          mt="md"
-          // Without this, expanding one card stretches every card sharing
-          // its grid row to match (CSS grid's default align-items: stretch).
-          style={{ alignItems: 'start' }}
-        >
-          {filtered.map((server) => (
-            <ServerCard
-              key={server.id}
-              server={server}
-              expanded={expandedIds.has(server.id)}
-              onToggleExpand={() => toggleExpand(server.id)}
-              onOpenModal={() => setModalServer(server)}
-            />
-          ))}
-        </SimpleGrid>
-      )}
+        )}
+      </div>
 
       <ServerDetailModal server={modalServer} onClose={() => setModalServer(null)} />
 

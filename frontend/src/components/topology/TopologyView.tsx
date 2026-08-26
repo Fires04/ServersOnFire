@@ -11,6 +11,8 @@ import {
   type Node,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
+import { ActionIcon, Tooltip } from '@mantine/core'
+import { IconMaximize, IconMinimize } from '@tabler/icons-react'
 import type { Server } from '../../types'
 import ServerNode from './ServerNode'
 import ServiceNode from './ServiceNode'
@@ -58,9 +60,19 @@ const nodeTypes: NodeTypes = {
 export default function TopologyView({
   servers,
   onOpenServer,
+  isFullscreen = false,
+  onToggleFullscreen,
 }: {
   servers: Server[]
   onOpenServer: (server: Server) => void
+  /** Whether the *ancestor* container (App.tsx — canvas + filter bar
+   * together, see its own comment) is currently the page's fullscreen
+   * element. This component doesn't call the Fullscreen API itself: the
+   * filter bar needs to stay usable in fullscreen too, so the element
+   * that actually goes fullscreen has to be a shared ancestor, not this
+   * canvas alone. */
+  isFullscreen?: boolean
+  onToggleFullscreen?: () => void
 }) {
   const { nodes: baseNodes, edges: baseEdges, siteLabels } = useMemo(
     () => layoutTopology(servers, onOpenServer),
@@ -82,11 +94,12 @@ export default function TopologyView({
   return (
     <div
       style={{
-        height: 560,
-        borderRadius: 12,
+        position: 'relative',
+        height: isFullscreen ? '100%' : 560,
+        borderRadius: isFullscreen ? 0 : 12,
         overflow: 'hidden',
         background: '#0d0f13',
-        border: '1px solid #ffffff14',
+        border: isFullscreen ? 'none' : '1px solid #ffffff14',
       }}
     >
       <ReactFlow
@@ -104,6 +117,21 @@ export default function TopologyView({
         <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#ffffff1a" />
         <Controls showInteractive={false} style={{ filter: 'invert(1) hue-rotate(180deg)' }} />
       </ReactFlow>
+
+      {onToggleFullscreen && (
+        <Tooltip label={isFullscreen ? 'Exit fullscreen' : 'Fullscreen (filters included)'}>
+          <ActionIcon
+            variant="filled"
+            color="dark"
+            size="lg"
+            radius="md"
+            onClick={onToggleFullscreen}
+            style={{ position: 'absolute', top: 12, right: 12, zIndex: 5 }}
+          >
+            {isFullscreen ? <IconMinimize size={18} /> : <IconMaximize size={18} />}
+          </ActionIcon>
+        </Tooltip>
+      )}
     </div>
   )
 }

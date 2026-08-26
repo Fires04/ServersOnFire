@@ -1,8 +1,6 @@
 import { createTheme, type MantineColorsTuple } from '@mantine/core'
 
-// Same "flame" brand accent as FiresLog (#d1451f / dark #ff6a3d) — copied
-// verbatim from FiresLog/frontend/src/theme.ts so the two dashboards look
-// like one family.
+// "flame" brand accent (#d1451f / dark #ff6a3d) matching the project logo.
 const flame: MantineColorsTuple = [
   '#fff2ee',
   '#ffe0d4',

@@ -8,9 +8,9 @@ RUN npm ci
 COPY frontend/ ./
 RUN npm run build
 
-# ---- Stage 2: derive the build version from git — same fleet-wide scheme
-# as FiresLog/Dockerfile: "<major from nearest vN tag>.<commits since that
-# tag>+g<hash>", e.g. tag v1 + 7 commits since = "1.7+ge1be41b". The count
+# ---- Stage 2: derive the build version from git: "<major from nearest
+# vN tag>.<commits since that tag>+g<hash>", e.g. tag v1 + 7 commits since
+# = "1.7+ge1be41b". The count
 # auto-increments every commit; a deliberate major bump is:
 #     git tag v2 && git push origin v2
 FROM python:3.12-slim AS gitinfo

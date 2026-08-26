@@ -7,13 +7,12 @@ returned list. netbox.py fetches devices/VMs/services *unfiltered* on
 purpose, so an id->name lookup here covers every possible backup target,
 even one that isn't itself tagged for display.
 
-Custom-field shapes (confirmed against the live NetBox instance during
+Custom-field shapes (confirmed against a live NetBox instance during
 planning): `backup_method` is a select field (serializes as
 {"value": ..., "label": ...}), `backup_target_vm`/`backup_target_device`
 are object refs (serialize as the raw target PK), `backup_path` is plain
-text. `_cf_object_id`/select handling mirrors NetboxMap/app/graph.py's,
-which stays defensive about the object-ref shape for the same reason noted
-there.
+text. `_cf_object_id`/select handling stays defensive about that object-ref
+shape, which NetBox's API is inconsistent about across versions/fields.
 """
 
 from __future__ import annotations
@@ -61,7 +60,7 @@ def _id_name_map(devices: list[dict], vms: list[dict]) -> dict[tuple[str, int], 
 
 def _cluster_hosts(devices: list[dict]) -> dict[int, str]:
     """cluster_id -> hosting device name, so a VM can show which physical
-    host it runs on (mirrors NetboxMap/app/graph.py's cluster_host map)."""
+    host it runs on."""
     hosts: dict[int, str] = {}
     for d in devices:
         cluster = d.get("cluster")

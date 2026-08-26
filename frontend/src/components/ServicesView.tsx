@@ -168,9 +168,8 @@ function ServiceListRow({
 }
 
 /** Flat icon-grid of every service across the (filtered) fleet — a
- * homer/homarr-style launcher rather than a per-server breakdown, matching
- * how home.fireit.cz/netmap presented services before this dashboard
- * replaced it. `onlyDown` narrows to services currently reporting down,
+ * homer/homarr-style launcher rather than a per-server breakdown.
+ * `onlyDown` narrows to services currently reporting down,
  * wired from the stat strip's "services (N down)" tile so that filter
  * means the same thing here as it does in the card/topology views.
  *

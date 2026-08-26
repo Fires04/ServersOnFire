@@ -4,9 +4,7 @@ services:
     container_name: serversonfire
     restart: unless-stopped
     ports:
-      # 8090=netmap, 8091=NetboxMap(planned) — 8092 is this project's
-      # candidate port; confirm it's actually free on the target host
-      # before first deploy (see README's deployment checklist).
+      # Change the left side if 8092 is already taken on your host.
       - "8092:8000"
     env_file:
       - .env

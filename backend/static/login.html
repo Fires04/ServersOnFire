@@ -1,23 +1,24 @@
 <!doctype html>
-<html lang="cs">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ServersOnFire — přihlášení</title>
+<title>ServersOnFire — sign in</title>
+<link rel="icon" type="image/png" href="/favicon.png">
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body class="login-body">
   <form class="login-card" method="post" action="/login">
-    <h1>🔥 ServersOnFire</h1>
-    <p class="subtitle">FireIT infrastruktura</p>
-    <div id="login-error" class="error-box" hidden>Špatné uživatelské jméno nebo heslo.</div>
-    <label>Uživatel
+    <h1><img src="/logo.png" alt="" class="logo"> ServersOnFire</h1>
+    <p class="subtitle">Inventory, Topology &amp; Services</p>
+    <div id="login-error" class="error-box" hidden>Incorrect username or password.</div>
+    <label>Username
       <input type="text" name="username" autocomplete="username" required autofocus>
     </label>
-    <label>Heslo
+    <label>Password
       <input type="password" name="password" autocomplete="current-password" required>
     </label>
-    <button type="submit">Přihlásit se</button>
+    <button type="submit">Sign in</button>
   </form>
   <script>
     if (new URLSearchParams(location.search).get('error')) {

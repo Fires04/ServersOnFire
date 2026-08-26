@@ -29,28 +29,25 @@ export default function ServerCard({
   return (
     <Card withBorder radius="md" p="md" className="sof-card" style={{ position: 'relative', overflow: 'hidden' }}>
       {groupColor && (
-        // A short diagonal line clipped into the top-left corner by the
-        // card's own overflow:hidden — solid for the host, dashed for its
-        // VMs, both the *same* shade of the same color. Two shades of one
-        // color (the previous version) still just reads as "these cards
-        // happen to have different colors"; same color + a different line
-        // style reads as "same group, different role" instead.
+        // A proper corner-ribbon triangle (clip-path), not just a thin
+        // line — solid fill for the host, a diagonal-striped fill of the
+        // *same* color for its VMs. Same color either way is the point:
+        // two shades of one color reads as "these happen to have
+        // different colors", same color + solid-vs-striped reads as "same
+        // group, different role".
         <div
           aria-hidden
           style={{
             position: 'absolute',
-            top: 15,
-            left: -18,
-            width: 52,
-            height: 0,
-            // Positive = clockwise, sweeping the line from off the
-            // top-left corner down-and-right into the card. -45deg (the
-            // first attempt) sent it the other way, off the *top* edge
-            // entirely — clipped to nothing by overflow:hidden, hence
-            // "I don't see anything at all".
-            transform: 'rotate(45deg)',
-            transformOrigin: 'left center',
-            borderTop: `3px ${groupColor.role === 'host' ? 'solid' : 'dashed'} var(--mantine-color-${groupColor.color}-6)`,
+            top: 0,
+            left: 0,
+            width: 40,
+            height: 40,
+            clipPath: 'polygon(0 0, 100% 0, 0 100%)',
+            background:
+              groupColor.role === 'host'
+                ? `var(--mantine-color-${groupColor.color}-6)`
+                : `repeating-linear-gradient(-45deg, var(--mantine-color-${groupColor.color}-6) 0px, var(--mantine-color-${groupColor.color}-6) 3px, transparent 3px, transparent 7px)`,
             pointerEvents: 'none',
           }}
         />

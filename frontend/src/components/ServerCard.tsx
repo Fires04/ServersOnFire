@@ -41,13 +41,13 @@ export default function ServerCard({
             position: 'absolute',
             top: 0,
             left: 0,
-            width: 40,
-            height: 40,
+            width: 18,
+            height: 18,
             clipPath: 'polygon(0 0, 100% 0, 0 100%)',
             background:
               groupColor.role === 'host'
                 ? `var(--mantine-color-${groupColor.color}-6)`
-                : `repeating-linear-gradient(-45deg, var(--mantine-color-${groupColor.color}-6) 0px, var(--mantine-color-${groupColor.color}-6) 3px, transparent 3px, transparent 7px)`,
+                : `repeating-linear-gradient(-45deg, var(--mantine-color-${groupColor.color}-6) 0px, var(--mantine-color-${groupColor.color}-6) 2px, transparent 2px, transparent 4px)`,
             pointerEvents: 'none',
           }}
         />

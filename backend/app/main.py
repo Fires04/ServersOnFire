@@ -51,7 +51,20 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-app.mount("/static", StaticFiles(directory=LOGIN_STATIC_DIR), name="login-static")
+# Explicit routes, not a StaticFiles mount, specifically so these two
+# hand-written files (edited far more often than they're deployed) can
+# carry a no-store header — a stale cached copy of either previously left
+# the login page rendering with old CSS the newer HTML didn't match
+# (oversized logo, misplaced checkbox). No perf concern either way: two
+# tiny files on a page nobody loads more than a few times a day.
+NO_STORE = {"Cache-Control": "no-store"}
+
+
+@app.get("/static/style.css")
+async def login_stylesheet():
+    return FileResponse(LOGIN_STATIC_DIR / "style.css", media_type="text/css", headers=NO_STORE)
+
+
 if (DIST_DIR / "assets").is_dir():
     app.mount("/assets", StaticFiles(directory=DIST_DIR / "assets"), name="assets")
 
@@ -62,7 +75,7 @@ if config.REQUIRE_LOGIN:
     async def login_page(request: Request):
         if auth.is_logged_in(request):
             return RedirectResponse(url="/", status_code=302)
-        return FileResponse(LOGIN_STATIC_DIR / "login.html")
+        return FileResponse(LOGIN_STATIC_DIR / "login.html", headers=NO_STORE)
 
     @app.post("/login")
     async def login_submit(

@@ -2,6 +2,7 @@
    see app/main.py). Palette matches the "flame" theme used everywhere else
    in the app (frontend/src/theme.ts). */
 :root {
+  color-scheme: light dark;
   --bg: #f5f6f8;
   --surface: #ffffff;
   --surface-2: #eef0f3;
@@ -17,6 +18,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
+    color-scheme: dark;
     --bg: #14161a;
     --surface: #1e2126;
     --surface-2: #262a31;
@@ -57,17 +59,24 @@ body {
   flex-direction: column;
   gap: 14px;
 }
-.login-card h1 { margin: 0; font-size: 1.6rem; display: flex; align-items: center; gap: 10px; }
-.login-card h1 .logo { height: 32px; width: auto; object-fit: contain; }
-.login-card .subtitle { margin: -8px 0 8px; color: var(--text-muted); font-size: 0.9rem; }
-.login-card label { display: flex; flex-direction: column; gap: 6px; font-size: 0.9rem; color: var(--text-muted); }
-.login-card label.checkbox-row {
-  flex-direction: row;
+
+/* Logo + wordmark, centered as one block above the form fields — width/
+   height attributes on the <img> itself (see login.html) pin its box
+   before any CSS even loads, so a slow/blocked stylesheet can't leave it
+   rendering at its native 303x375. */
+.brand {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  margin: -4px 0;
+  text-align: center;
+  gap: 2px;
+  margin-bottom: 4px;
 }
-.login-card label.checkbox-row input { width: 16px; height: 16px; margin: 0; accent-color: var(--accent); }
+.brand .logo { height: 56px; width: auto; object-fit: contain; margin-bottom: 8px; }
+.brand h1 { margin: 0; font-size: 1.5rem; }
+.brand .subtitle { margin: 0; color: var(--text-muted); font-size: 0.85rem; }
+
+.login-card label { display: flex; flex-direction: column; gap: 6px; font-size: 0.9rem; color: var(--text-muted); }
 .login-card input {
   font-size: 1rem;
   padding: 10px 12px;
@@ -76,6 +85,48 @@ body {
   background: var(--surface-2);
   color: var(--text);
 }
+
+/* Custom checkbox instead of the bare native control — matches the
+   rounded/bordered/accent-filled language of every other input here
+   instead of whatever the browser's default checkbox happens to look
+   like (which, on top of looking out of place, some browsers/dark-mode
+   extensions re-theme with their own colors independent of this page's
+   CSS — a fully custom-drawn box is much less likely to get overridden
+   the same way a native widget is). */
+.login-card label.checkbox-row {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+.checkbox-row input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface-2);
+  position: relative;
+  cursor: pointer;
+}
+.checkbox-row input[type="checkbox"]:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.checkbox-row input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 9px;
+  border: solid var(--accent-text);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
 .login-card button {
   margin-top: 8px;
   padding: 12px;

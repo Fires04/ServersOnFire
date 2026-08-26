@@ -3,12 +3,15 @@ import { IconSearch } from '@tabler/icons-react'
 import { forwardRef } from 'react'
 
 export type KindFilter = 'all' | 'device' | 'vm'
-export type SortOption = 'name' | 'status' | 'services'
+export type SortOption = 'name' | 'status' | 'services' | 'vcpus' | 'memory' | 'disk'
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'name', label: 'Name' },
   { value: 'status', label: 'Status' },
   { value: 'services', label: 'Most services' },
+  { value: 'vcpus', label: 'Most vCPUs' },
+  { value: 'memory', label: 'Most RAM' },
+  { value: 'disk', label: 'Most disk' },
 ]
 
 const FilterBar = forwardRef<
@@ -62,7 +65,7 @@ const FilterBar = forwardRef<
         value={sort}
         onChange={(value) => onSortChange((value as SortOption) ?? 'name')}
         allowDeselect={false}
-        style={{ width: 150 }}
+        style={{ width: 170 }}
       />
     </Group>
   )

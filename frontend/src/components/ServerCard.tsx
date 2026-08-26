@@ -6,19 +6,32 @@ import ServerIcon from './ServerIcon'
 import ServerDetailContent from './ServerDetailContent'
 import TagBadges from './TagBadges'
 
+export type GroupColor = { color: string; role: 'host' | 'guest' }
+
 export default function ServerCard({
   server,
   expanded,
   onToggleExpand,
   onOpenModal,
+  groupColor,
 }: {
   server: Server
   expanded: boolean
   onToggleExpand: () => void
   onOpenModal: () => void
+  /** Host/VM grouping color (see lib/hostGroups.ts) — deliberately just a
+   * thin edge, not a filled/tinted card: a host gets the full-strength
+   * shade, its VMs a much lighter one, so the grouping reads at a glance
+   * without competing with the status badge or turning the grid into a
+   * wash of color. */
+  groupColor?: GroupColor
 }) {
+  const groupBorder = groupColor
+    ? `3px solid var(--mantine-color-${groupColor.color}-${groupColor.role === 'host' ? 6 : 3})`
+    : undefined
+
   return (
-    <Card withBorder radius="md" p="md" className="sof-card">
+    <Card withBorder radius="md" p="md" className="sof-card" style={{ borderLeft: groupBorder }}>
       <Stack gap="xs" onClick={onToggleExpand} style={{ cursor: 'pointer' }}>
         <Group justify="space-between" wrap="nowrap">
           <Group gap="xs" wrap="nowrap" style={{ minWidth: 0, flexShrink: 1 }}>

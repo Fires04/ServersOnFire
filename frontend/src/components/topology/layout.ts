@@ -1,5 +1,6 @@
 import type { Edge } from '@xyflow/react'
 import type { Server, Service } from '../../types'
+import { computeHostGroups } from '../../lib/hostGroups'
 import { SERVER_NODE_WIDTH, type ServerNode } from './ServerNode'
 import type { ServiceNode } from './ServiceNode'
 
@@ -46,19 +47,8 @@ export function layoutTopology(
   const edges: Edge[] = []
   const siteLabels: SiteLabel[] = []
 
-  const deviceByName = new Map(servers.filter((s) => s.kind === 'device').map((s) => [s.name, s]))
-  const vmsByHost = new Map<string, Server[]>()
-  const roots: Server[] = []
-  for (const s of servers) {
-    const hostName = s.kind === 'vm' ? s.params.hypervisor : undefined
-    if (hostName && deviceByName.has(hostName)) {
-      const arr = vmsByHost.get(hostName) ?? []
-      arr.push(s)
-      vmsByHost.set(hostName, arr)
-    } else {
-      roots.push(s)
-    }
-  }
+  const { vmsByHost, hostNameById } = computeHostGroups(servers)
+  const roots = servers.filter((s) => !hostNameById.has(s.id))
 
   function serviceFanWidth(count: number): number {
     if (count === 0) return 0

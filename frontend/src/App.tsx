@@ -24,8 +24,9 @@ import {
 } from '@tabler/icons-react'
 import { api } from './lib/api'
 import type { QuickLink, Server } from './types'
+import { computeHostGroups, hostGroupColor } from './lib/hostGroups'
 import FilterBar, { type KindFilter, type SortOption } from './components/FilterBar'
-import ServerCard from './components/ServerCard'
+import ServerCard, { type GroupColor } from './components/ServerCard'
 import ServerDetailModal from './components/ServerDetailModal'
 import StatStrip, { type StatFilter } from './components/StatStrip'
 import ServicesView from './components/ServicesView'
@@ -53,7 +54,7 @@ function paramText(name: string): string {
   return new URLSearchParams(window.location.search).get(name) ?? ''
 }
 
-const SORT_OPTIONS: SortOption[] = ['name', 'status', 'services']
+const SORT_OPTIONS: SortOption[] = ['name', 'status', 'services', 'vcpus', 'memory', 'disk']
 const STAT_FILTERS: StatFilter[] = ['all', 'active', 'issues', 'servicesDown']
 const KIND_FILTERS: KindFilter[] = ['all', 'device', 'vm']
 
@@ -211,11 +212,41 @@ export default function App() {
       case 'services':
         result.sort((a, b) => b.services.length - a.services.length || a.name.localeCompare(b.name))
         break
+      case 'vcpus':
+        // Devices don't carry vcpus/memory_mb/disk_gb at all (only VMs
+        // do, see dataset.py's _device_params vs _vm_params) — treated as
+        // 0 here, which sorts them to the bottom rather than throwing off
+        // comparisons with undefined.
+        result.sort((a, b) => (b.params.vcpus ?? 0) - (a.params.vcpus ?? 0) || a.name.localeCompare(b.name))
+        break
+      case 'memory':
+        result.sort(
+          (a, b) => (b.params.memory_mb ?? 0) - (a.params.memory_mb ?? 0) || a.name.localeCompare(b.name),
+        )
+        break
+      case 'disk':
+        result.sort(
+          (a, b) => (b.params.disk_gb ?? 0) - (a.params.disk_gb ?? 0) || a.name.localeCompare(b.name),
+        )
+        break
       default:
         result.sort((a, b) => a.name.localeCompare(b.name))
     }
     return result
   }, [servers, search, kind, site, sort, statFilter])
+
+  // Host/VM grouping for the card view's colored edge (see ServerCard) —
+  // computed from `filtered`, same as the topology view, so a host
+  // filtered out of view stops coloring its (still visible) VMs rather
+  // than implying a relationship you can't actually see the other end of.
+  const hostGroups = useMemo(() => computeHostGroups(filtered), [filtered])
+  function groupColorFor(server: Server): GroupColor | undefined {
+    if (hostGroups.vmsByHost.has(server.name)) {
+      return { color: hostGroupColor(server.name), role: 'host' }
+    }
+    const hostName = hostGroups.hostNameById.get(server.id)
+    return hostName ? { color: hostGroupColor(hostName), role: 'guest' } : undefined
+  }
 
   // "/" focuses search from anywhere on the page, "Esc" clears it — same
   // pair of shortcuts most search-heavy dashboards use, so it needs no
@@ -435,6 +466,7 @@ export default function App() {
                 expanded={expandedIds.has(server.id)}
                 onToggleExpand={() => toggleExpand(server.id)}
                 onOpenModal={() => setModalServer(server)}
+                groupColor={groupColorFor(server)}
               />
             ))}
           </SimpleGrid>

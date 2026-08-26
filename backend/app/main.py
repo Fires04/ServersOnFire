@@ -7,16 +7,14 @@ from fastapi import Form, Request
 from fastapi import FastAPI
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from starlette.middleware.sessions import SessionMiddleware
 
 from . import auth, config, netbox, quicklinks
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("serversonfire")
 
-# The hand-written login form lives outside the React build (copied
-# straight from netmap/static/login.html) — served from here regardless of
-# what the frontend build produced.
+# The hand-written login form lives outside the React build — served from
+# here regardless of what the frontend build produced.
 LOGIN_STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 
 # Populated at image-build time by `COPY --from=frontend-build /fe/dist
@@ -53,15 +51,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-if config.REQUIRE_LOGIN:
-    app.add_middleware(
-        SessionMiddleware,
-        secret_key=config.SESSION_SECRET,
-        https_only=config.COOKIE_HTTPS_ONLY,
-        same_site="lax",
-        max_age=60 * 60 * 24 * 30,
-    )
-
 app.mount("/static", StaticFiles(directory=LOGIN_STATIC_DIR), name="login-static")
 if (DIST_DIR / "assets").is_dir():
     app.mount("/assets", StaticFiles(directory=DIST_DIR / "assets"), name="assets")
@@ -76,16 +65,22 @@ if config.REQUIRE_LOGIN:
         return FileResponse(LOGIN_STATIC_DIR / "login.html")
 
     @app.post("/login")
-    async def login_submit(request: Request, username: str = Form(...), password: str = Form(...)):
+    async def login_submit(
+        username: str = Form(...),
+        password: str = Form(...),
+        remember: str | None = Form(None),
+    ):
         if auth.check_credentials(username, password):
-            request.session["authenticated"] = True
-            return RedirectResponse(url="/", status_code=302)
+            response = RedirectResponse(url="/", status_code=302)
+            auth.set_session_cookie(response, remember=bool(remember))
+            return response
         return RedirectResponse(url="/login?error=1", status_code=302)
 
     @app.get("/logout")
-    async def logout(request: Request):
-        request.session.clear()
-        return RedirectResponse(url="/login", status_code=302)
+    async def logout():
+        response = RedirectResponse(url="/login", status_code=302)
+        auth.clear_session_cookie(response)
+        return response
 
 
 @app.get("/", response_class=HTMLResponse)

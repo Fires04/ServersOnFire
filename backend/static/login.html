@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ServersOnFire — sign in</title>
 <link rel="icon" type="image/png" href="/favicon.png">
-<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/style.css?v=2">
 </head>
 <body class="login-body">
   <form class="login-card" method="post" action="/login">
@@ -17,6 +17,10 @@
     </label>
     <label>Password
       <input type="password" name="password" autocomplete="current-password" required>
+    </label>
+    <label class="checkbox-row">
+      <input type="checkbox" name="remember" value="1">
+      Stay signed in
     </label>
     <button type="submit">Sign in</button>
   </form>

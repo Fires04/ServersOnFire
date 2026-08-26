@@ -86,45 +86,23 @@ body {
   color: var(--text);
 }
 
-/* Custom checkbox instead of the bare native control — matches the
-   rounded/bordered/accent-filled language of every other input here
-   instead of whatever the browser's default checkbox happens to look
-   like (which, on top of looking out of place, some browsers/dark-mode
-   extensions re-theme with their own colors independent of this page's
-   CSS — a fully custom-drawn box is much less likely to get overridden
-   the same way a native widget is). */
+/* Native checkbox, just recolored — a hand-drawn checkmark (previous
+   version) needs its ::after box positioned by hand to land dead-center,
+   which drifted visibly off-center in testing. accent-color hands the
+   whole box+checkmark to the browser's own renderer, in our accent color,
+   properly centered by construction instead of by pixel-guessing. */
 .login-card label.checkbox-row {
   flex-direction: row;
   align-items: center;
   gap: 8px;
 }
 .checkbox-row input[type="checkbox"] {
-  appearance: none;
-  -webkit-appearance: none;
   width: 18px;
   height: 18px;
   margin: 0;
   flex-shrink: 0;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  background: var(--surface-2);
-  position: relative;
+  accent-color: var(--accent);
   cursor: pointer;
-}
-.checkbox-row input[type="checkbox"]:checked {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-.checkbox-row input[type="checkbox"]:checked::after {
-  content: "";
-  position: absolute;
-  left: 5px;
-  top: 1px;
-  width: 5px;
-  height: 9px;
-  border: solid var(--accent-text);
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
 }
 
 .login-card button {

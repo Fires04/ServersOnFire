@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { useMediaQuery } from '@mantine/hooks'
 import {
   ActionIcon,
   Alert,
@@ -76,6 +77,7 @@ export default function App() {
   const [modalServer, setModalServer] = useState<Server | null>(null)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const isMobile = useMediaQuery('(max-width: 36em)') ?? false
   const searchRef = useRef<HTMLInputElement>(null)
   // Wraps the stat strip + filter bar + topology canvas together — the
   // Fullscreen API only affects the one element it's called on, and the
@@ -282,7 +284,7 @@ export default function App() {
           </div>
         </Group>
         <Group gap="xs">
-          {generatedAt && (
+          {generatedAt && !isMobile && (
             <Text size="xs" c="dimmed">
               Updated {new Date(generatedAt).toLocaleString()}
             </Text>
@@ -297,7 +299,7 @@ export default function App() {
                 value: 'cards',
                 label: (
                   <Group gap={6} wrap="nowrap">
-                    <IconLayoutGrid size={16} /> <span>Cards</span>
+                    <IconLayoutGrid size={16} /> {!isMobile && <span>Cards</span>}
                   </Group>
                 ),
               },
@@ -305,7 +307,7 @@ export default function App() {
                 value: 'topology',
                 label: (
                   <Group gap={6} wrap="nowrap">
-                    <IconSitemap size={16} /> <span>Topology</span>
+                    <IconSitemap size={16} /> {!isMobile && <span>Topology</span>}
                   </Group>
                 ),
               },
@@ -313,7 +315,7 @@ export default function App() {
                 value: 'services',
                 label: (
                   <Group gap={6} wrap="nowrap">
-                    <IconApps size={16} /> <span>Services</span>
+                    <IconApps size={16} /> {!isMobile && <span>Services</span>}
                   </Group>
                 ),
               },

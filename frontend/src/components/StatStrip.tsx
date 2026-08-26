@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { useMediaQuery } from '@mantine/hooks'
 import { Group, Paper, Text, ThemeIcon } from '@mantine/core'
 import {
   IconCircleCheck,
@@ -21,6 +22,7 @@ function Stat({
   color,
   active,
   onClick,
+  compact,
 }: {
   icon: ReactNode
   value: number
@@ -28,12 +30,13 @@ function Stat({
   color: string
   active: boolean
   onClick: () => void
+  compact: boolean
 }) {
   return (
     <Paper
       withBorder
       radius="md"
-      p="sm"
+      p={compact ? 6 : 'sm'}
       onClick={onClick}
       className="sof-stat"
       style={{
@@ -43,15 +46,15 @@ function Stat({
         background: active ? `var(--mantine-color-${color}-light)` : undefined,
       }}
     >
-      <Group gap="sm" wrap="nowrap">
-        <ThemeIcon size={36} radius="md" variant={active ? 'filled' : 'light'} color={color}>
+      <Group gap={compact ? 6 : 'sm'} wrap="nowrap">
+        <ThemeIcon size={compact ? 26 : 36} radius="md" variant={active ? 'filled' : 'light'} color={color}>
           {icon}
         </ThemeIcon>
-        <div>
-          <Text fw={700} size="lg" lh={1.1}>
+        <div style={{ minWidth: 0 }}>
+          <Text fw={700} size={compact ? 'sm' : 'lg'} lh={1.1}>
             {value}
           </Text>
-          <Text size="xs" c="dimmed">
+          <Text size="xs" c="dimmed" truncate={compact}>
             {label}
           </Text>
         </div>
@@ -64,7 +67,9 @@ function Stat({
  * rather than the currently-filtered/searched list — this is meant to
  * answer "is anything on fire right now", which shouldn't change just
  * because someone typed into the search box or clicked one of these tiles
- * as a filter. */
+ * as a filter. Shrinks itself (smaller padding/icons, no separate label
+ * line room) below phone width — on a small screen every bit of vertical
+ * space before the results matters, especially once the keyboard is up. */
 export default function StatStrip({
   servers,
   filter,
@@ -80,6 +85,8 @@ export default function StatStrip({
    * control was used to narrow the view. */
   onResetAll: () => void
 }) {
+  const compact = useMediaQuery('(max-width: 36em)') ?? false
+
   const total = servers.length
   const active = servers.filter((s) => s.status === 'active').length
   const issues = total - active
@@ -92,38 +99,42 @@ export default function StatStrip({
   }
 
   return (
-    <Group gap="sm" wrap="wrap" mb="md">
+    <Group gap={compact ? 6 : 'sm'} wrap="wrap" mb={compact ? 'xs' : 'md'}>
       <Stat
-        icon={<IconServer size={18} />}
+        icon={<IconServer size={compact ? 14 : 18} />}
         value={total}
         label="servers"
         color="flame"
         active={filter === 'all'}
         onClick={onResetAll}
+        compact={compact}
       />
       <Stat
-        icon={<IconCircleCheck size={18} />}
+        icon={<IconCircleCheck size={compact ? 14 : 18} />}
         value={active}
         label="active"
         color="teal"
         active={filter === 'active'}
         onClick={() => toggle('active')}
+        compact={compact}
       />
       <Stat
-        icon={<IconAlertTriangle size={18} />}
+        icon={<IconAlertTriangle size={compact ? 14 : 18} />}
         value={issues}
         label={issues === 1 ? 'needs attention' : 'need attention'}
         color={issues > 0 ? 'red' : 'gray'}
         active={filter === 'issues'}
         onClick={() => issues > 0 && toggle('issues')}
+        compact={compact}
       />
       <Stat
-        icon={<IconStack2 size={18} />}
+        icon={<IconStack2 size={compact ? 14 : 18} />}
         value={services.length}
         label={servicesDown > 0 ? `services (${servicesDown} down)` : 'services'}
         color={servicesDown > 0 ? 'red' : 'flame'}
         active={filter === 'servicesDown'}
         onClick={() => servicesDown > 0 && toggle('servicesDown')}
+        compact={compact}
       />
     </Group>
   )

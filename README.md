@@ -1,17 +1,59 @@
-# ServersOnFire
+# 🔥 ServersOnFire
 
-Visual server dashboard backed by NetBox — a richer replacement in progress
-for `home.fireit.cz` (`FireIT/netmap/`). Only devices/VMs tagged `netmap`
-(configurable via `DISPLAY_TAG`) are shown. Styled after **Logs On Fire**
-(`FiresLog/`): React + TypeScript + Vite + Mantine v9, the `flame` palette,
-single-image Docker build.
+**A visual, NetBox-driven dashboard for your homelab or infra fleet.**
 
-NetBox stays the single source of truth — this app fetches and displays,
-it never invents or stores its own copy of inventory data.
+ServersOnFire turns your [NetBox](https://netboxlabs.com/) inventory into a
+live dashboard: every device and VM tagged for display, its services, their
+health, and how it all fits together — in a card grid, a network-style
+topology map, or a flat service launcher.
 
-v1 is NetBox data only (overview grid + per-server detail: parameters,
-services with live health dots, backup config). v2.0 (not built yet) adds
-live CPU/RAM/disk via Zabbix.
+NetBox stays the single source of truth. This app only reads it — it never
+invents or stores its own copy of your inventory.
+
+<p align="center">
+  <img src="frontend/public/logo.png" alt="ServersOnFire" height="160">
+</p>
+
+## Features
+
+- **Cards view** — every tagged device/VM as a card: status, role, site,
+  tags, parameters, backup config, and its services with live health dots.
+- **Topology view** — a network-map layout: physical hosts in a backbone
+  row, their VMs nested below (matched via NetBox's Cluster field), each
+  server's services fanned out underneath with one-click LAN/external
+  links. Pans, zooms, and re-fits itself to whatever you've filtered down to.
+- **Services view** — a flat icon-grid launcher (homer/homarr style) across
+  every server, with a single-column layout on mobile.
+- **Live health checks** — each service with a URL gets probed on refresh;
+  status shows up everywhere (cards, topology, service tiles) as a color.
+- **Filterable, shareable** — search, filter by kind/site/status, sort, and
+  the whole view state lives in the URL, so a filtered link can be
+  bookmarked or shared as-is.
+- **Quick links** — a small row of external links (other dashboards, tools,
+  whatever you jump to often) that live outside NetBox entirely, editable
+  right from the UI or by hand-editing a JSON file.
+- **Built-in NetBox cheatsheet** — a collapsible panel explaining exactly
+  which tags and custom fields a device/VM needs for any of the above to
+  show up, generated from the actual backend logic rather than a doc that
+  drifts out of sync with it.
+
+## How it works
+
+Only devices/VMs carrying a specific NetBox tag (`netmap` by default,
+configurable via `DISPLAY_TAG`) are shown — everything else in your NetBox
+instance is ignored. A device or VM's services come from NetBox's IPAM
+**Service** objects assigned to it, with two custom fields (`internal_url`,
+`external_url`) driving the health check and the open-service buttons.
+
+Open the app and expand the "How do I get something to show up here?"
+panel at the bottom of the page for the full, always-current field-by-field
+reference.
+
+## Tech stack
+
+FastAPI backend, React + TypeScript + Vite + Mantine v9 frontend,
+[`@xyflow/react`](https://reactflow.dev/) for the topology view, single
+Docker image (frontend built and served as static files by the backend).
 
 ## Local dev
 
@@ -40,22 +82,16 @@ frozen fixtures, no live NetBox connection needed:
 cd backend && .venv/bin/pytest -q
 ```
 
-## Docker
+## Deploying
 
 ```
+cp .env.example .env   # fill in your real NETBOX_URL / NETBOX_TOKEN
 docker compose up -d --build
 ```
-`--build` matters — forgetting it serves a stale image with an old
-frontend bundle (see netmap's docs for the same gotcha).
+`--build` matters — skipping it serves a stale image with an old frontend
+bundle. Quick links (`data/quicklinks.json`) live in a bind-mounted `data/`
+directory so they survive rebuilds; see `.env.example` for every other
+configurable option (login gate, refresh interval, display tag, etc).
 
-Port: **8092** by default (netmap=8090, NetboxMap planned=8091) — confirm
-it's actually free on the target host before first deploy.
-
-## Deploying to Lima
-
-Not yet done from this session — needs someone with SSH access to the
-Lima host to:
-1. Resolve the `/srv/docker` vs `~/docker` path convention (docs disagree
-   between netmap's `HANDOVER.md` and `NetboxMap/README.md`).
-2. Confirm port 8092 is free.
-3. `git clone`, drop in a real `.env`, `docker compose up -d --build`.
+Default port is **8092** — change the left side of the `ports:` mapping in
+`docker-compose.yml` if that's taken on your host.

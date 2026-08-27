@@ -51,7 +51,7 @@ function Stat({
           {icon}
         </ThemeIcon>
         <div style={{ minWidth: 0 }}>
-          <Text fw={700} size={compact ? 'sm' : 'lg'} lh={1.1}>
+          <Text ff="monospace" fw={700} size={compact ? 'sm' : 'lg'} lh={1.1}>
             {value}
           </Text>
           <Text size="xs" c="dimmed" truncate={compact}>

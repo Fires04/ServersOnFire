@@ -28,7 +28,7 @@ export default function ServiceNode({ data }: NodeProps<ServiceNode>) {
         width: 112,
         padding: '6px 8px',
         borderRadius: 8,
-        background: '#14161b',
+        background: 'var(--sof-topo-service-surface, #14161b)',
         border: `1px solid ${service.up === false ? '#e8555a4d' : '#ffffff14'}`,
         display: 'flex',
         flexDirection: 'column',
@@ -60,7 +60,7 @@ export default function ServiceNode({ data }: NodeProps<ServiceNode>) {
               height: 6,
               borderRadius: '50%',
               background: dotColor,
-              border: '1px solid #14161b',
+              border: '1px solid var(--sof-topo-service-surface, #14161b)',
             }}
           />
         </div>

@@ -37,3 +37,20 @@ AUTHENTIK_REDIRECT_URI = os.environ.get("AUTHENTIK_REDIRECT_URI", "")
 OIDC_ENABLED = REQUIRE_LOGIN and all(
     [AUTHENTIK_CLIENT_ID, AUTHENTIK_CLIENT_SECRET, AUTHENTIK_ISSUER, AUTHENTIK_REDIRECT_URI]
 )
+
+# Color theme (see frontend/src/lib/themes.ts for the full 10-shade ramps
+# and topology-canvas colors) — this is only the *starting point* for a
+# browser that hasn't picked one of its own yet (frontend/src/Root.tsx),
+# never overrides a saved local pick. THEME_ACCENTS below is the same set
+# of themes, trimmed to what the login page's plain CSS actually needs
+# (no React there to read the full ramps from) — keep both in sync if a
+# theme's accent ever changes.
+THEME_ACCENTS: dict[str, dict[str, str]] = {
+    "signal": {"light": "#0f97c0", "light_text": "#ffffff", "dark": "#35c5f0", "dark_text": "#08222c"},
+    "aurora": {"light": "#7440d6", "light_text": "#ffffff", "dark": "#9d6bff", "dark_text": "#1c1230"},
+    "copper": {"light": "#a95f28", "light_text": "#ffffff", "dark": "#d68a4c", "dark_text": "#241505"},
+    "slate": {"light": "#3a4fc7", "light_text": "#ffffff", "dark": "#5b7cfa", "dark_text": "#0d1130"},
+}
+DEFAULT_THEME = os.environ.get("DEFAULT_THEME", "copper")
+if DEFAULT_THEME not in THEME_ACCENTS:
+    DEFAULT_THEME = "copper"

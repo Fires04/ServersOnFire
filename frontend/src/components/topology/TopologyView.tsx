@@ -98,7 +98,11 @@ export default function TopologyView({
         height: isFullscreen ? '100%' : 560,
         borderRadius: isFullscreen ? 0 : 12,
         overflow: 'hidden',
-        background: '#0d0f13',
+        // Set by Root.tsx from the active color theme (see lib/themes.ts)
+        // — the canvas stays a fixed dark ground regardless of the app's
+        // own light/dark setting (see this component's own doc comment),
+        // but which dark ground shifts with the chosen theme.
+        background: 'var(--sof-topo-bg, #0d0f13)',
         border: isFullscreen ? 'none' : '1px solid #ffffff14',
       }}
     >

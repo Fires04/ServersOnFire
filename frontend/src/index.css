@@ -8,13 +8,16 @@
 
 body {
   margin: 0;
-  /* Very faint flame-tinted glow behind the header instead of a flat
+  /* Very faint accent-tinted glow behind the header instead of a flat
      background — subtle enough to stay out of the way of card contrast in
      both color schemes, but it's the difference between "themed app" and
-     "default Mantine app". Fixed so it doesn't scroll away with content. */
+     "default Mantine app". Fixed so it doesn't scroll away with content.
+     --sof-glow is set on the root element by Root.tsx based on the active
+     color theme; the fallback here only matters for the first paint
+     before that effect runs. */
   background-image: radial-gradient(
     ellipse 1200px 500px at 50% -100px,
-    rgba(255, 106, 61, 0.16),
+    var(--sof-glow, rgba(255, 106, 61, 0.16)),
     transparent 70%
   );
   background-repeat: no-repeat;

@@ -1,33 +1,27 @@
-import { createTheme, type MantineColorsTuple } from '@mantine/core'
+import { createTheme } from '@mantine/core'
+import { THEMES, type ThemeName } from './lib/themes'
 
-// "flame" brand accent (#d1451f / dark #ff6a3d) matching the project logo.
-const flame: MantineColorsTuple = [
-  '#fff2ee',
-  '#ffe0d4',
-  '#ffbfa8',
-  '#ff9a78',
-  '#ff7a50',
-  '#ff6a3d',
-  '#f5602f',
-  '#d1451f',
-  '#b83a19',
-  '#9c2f12',
-]
-
-export const theme = createTheme({
-  primaryColor: 'flame',
-  colors: { flame },
-  defaultRadius: 'md',
-  fontFamily:
-    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-  fontFamilyMonospace:
-    "'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace",
-  headings: { fontWeight: '700' },
-})
+/** Builds the Mantine theme for a given color theme — every `color="flame"`
+ * reference elsewhere in the app stays as-is; only the 10-shade ramp
+ * backing that key changes per theme (see lib/themes.ts). */
+export function buildTheme(name: ThemeName) {
+  return createTheme({
+    primaryColor: 'flame',
+    colors: { flame: THEMES[name].flame },
+    defaultRadius: 'md',
+    fontFamily:
+      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    fontFamilyMonospace:
+      "'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace",
+    headings: { fontWeight: '700' },
+  })
+}
 
 // NetBox device/VM `status.value` -> badge color. Anything not listed here
 // (custom statuses some instances add) falls back to gray rather than
-// guessing.
+// guessing. Deliberately independent of the color theme above — status
+// meaning (active/offline/staged) stays constant no matter which accent
+// is picked.
 const DEVICE_STATUS_COLOR: Record<string, string> = {
   active: 'teal',
   staged: 'yellow',

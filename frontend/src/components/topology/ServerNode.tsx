@@ -36,7 +36,7 @@ export default function ServerNode({ data }: NodeProps<ServerNode>) {
         width: SERVER_NODE_WIDTH,
         padding: '10px 12px',
         borderRadius: 10,
-        background: '#1c1f26',
+        background: 'var(--sof-topo-surface, #1c1f26)',
         border: `1px solid ${downServices > 0 || dotColor === '#e8555a' ? '#e8555a55' : '#ffffff1a'}`,
         boxShadow: '0 2px 8px rgba(0,0,0,0.35)',
         cursor: 'pointer',

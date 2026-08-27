@@ -1,6 +1,9 @@
 /* Only used by the standalone /login page (outside the React/Mantine build,
-   see app/main.py). Palette matches the "flame" theme used everywhere else
-   in the app (frontend/src/theme.ts). */
+   see app/main.py). --accent/--accent-text are placeholders substituted
+   server-side (main.py's login_stylesheet()) from config.DEFAULT_THEME —
+   this page has no client-side theme picker (no React here), so it always
+   reflects whichever theme a fresh browser would land on in the app
+   itself. Everything else matches the app's own neutral tokens either way. */
 :root {
   color-scheme: light dark;
   --bg: #f5f6f8;
@@ -9,8 +12,8 @@
   --text: #1a1d21;
   --text-muted: #6b7280;
   --border: #e2e4e8;
-  --accent: #d1451f;
-  --accent-text: #ffffff;
+  --accent: __ACCENT_LIGHT__;
+  --accent-text: __ACCENT_LIGHT_TEXT__;
   --danger: #dc2626;
   --danger-bg: #fee2e2;
   --radius: 10px;
@@ -25,8 +28,8 @@
     --text: #e8e9eb;
     --text-muted: #9aa0aa;
     --border: #33373f;
-    --accent: #ff6a3d;
-    --accent-text: #1a1d21;
+    --accent: __ACCENT_DARK__;
+    --accent-text: __ACCENT_DARK_TEXT__;
     --danger: #f87171;
     --danger-bg: #3a1c1c;
   }

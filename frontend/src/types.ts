@@ -75,4 +75,7 @@ export interface ApiData {
    * here at all — surfaced so HelpPanel's cheatsheet stays correct even if
    * an instance overrides the default. */
   display_tag: string
+  /** config.DEFAULT_THEME — adopted client-side only if this browser
+   * hasn't already picked its own color theme (see Root.tsx). */
+  default_theme: string
 }

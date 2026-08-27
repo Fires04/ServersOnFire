@@ -76,9 +76,23 @@ if config.OIDC_ENABLED:
 NO_STORE = {"Cache-Control": "no-store"}
 
 
+_LOGIN_CSS = (LOGIN_STATIC_DIR / "style.css").read_text()
+
+
 @app.get("/static/style.css")
 async def login_stylesheet():
-    return FileResponse(LOGIN_STATIC_DIR / "style.css", media_type="text/css", headers=NO_STORE)
+    # The login page has no client-side theme picker (no React there) —
+    # it always reflects config.DEFAULT_THEME, substituted into the
+    # __ACCENT_*__ placeholders (see style.css). Matches the in-app default
+    # a browser that hasn't picked its own theme yet would land on.
+    accents = config.THEME_ACCENTS[config.DEFAULT_THEME]
+    css = (
+        _LOGIN_CSS.replace("__ACCENT_LIGHT__", accents["light"])
+        .replace("__ACCENT_LIGHT_TEXT__", accents["light_text"])
+        .replace("__ACCENT_DARK__", accents["dark"])
+        .replace("__ACCENT_DARK_TEXT__", accents["dark_text"])
+    )
+    return HTMLResponse(css, media_type="text/css", headers=NO_STORE)
 
 
 if (DIST_DIR / "assets").is_dir():
@@ -136,6 +150,7 @@ async def api_data(request: Request):
             # name the real configured tag instead of hardcoding "netmap"
             # and silently going stale if DISPLAY_TAG is ever overridden.
             "display_tag": config.DISPLAY_TAG,
+            "default_theme": config.DEFAULT_THEME,
         }
     )
 
@@ -172,6 +187,7 @@ async def api_refresh(request: Request):
             "dataset": state["dataset"],
             "last_error": state["last_error"],
             "display_tag": config.DISPLAY_TAG,
+            "default_theme": config.DEFAULT_THEME,
         }
     )
 

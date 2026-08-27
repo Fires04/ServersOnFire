@@ -7,6 +7,7 @@ import {
   Button,
   Container,
   Group,
+  Menu,
   SegmentedControl,
   SimpleGrid,
   Skeleton,
@@ -18,7 +19,9 @@ import {
 import {
   IconAlertTriangle,
   IconApps,
+  IconCheck,
   IconLayoutGrid,
+  IconPalette,
   IconRefresh,
   IconSitemap,
   IconX,
@@ -26,6 +29,7 @@ import {
 import { api } from './lib/api'
 import type { QuickLink, Server } from './types'
 import { computeHostGroups, hostGroupColor } from './lib/hostGroups'
+import { THEMES, THEME_NAMES, type ThemeName } from './lib/themes'
 import FilterBar, { type KindFilter, type SortOption } from './components/FilterBar'
 import ServerCard, { type GroupColor } from './components/ServerCard'
 import ServerDetailModal from './components/ServerDetailModal'
@@ -59,7 +63,15 @@ const SORT_OPTIONS: SortOption[] = ['name', 'status', 'services', 'vcpus', 'memo
 const STAT_FILTERS: StatFilter[] = ['all', 'active', 'issues', 'servicesDown']
 const KIND_FILTERS: KindFilter[] = ['all', 'device', 'vm']
 
-export default function App() {
+export default function App({
+  themeName,
+  onThemeChange,
+  onServerDefaultTheme,
+}: {
+  themeName: ThemeName
+  onThemeChange: (name: ThemeName) => void
+  onServerDefaultTheme: (name: string) => void
+}) {
   const [servers, setServers] = useState<Server[] | null>(null)
   const [generatedAt, setGeneratedAt] = useState<string | null>(null)
   const [lastError, setLastError] = useState<string | null>(null)
@@ -135,6 +147,7 @@ export default function App() {
     setGeneratedAt(res.dataset?.generated_at ?? null)
     setLastError(res.last_error)
     if (res.display_tag) setDisplayTag(res.display_tag)
+    if (res.default_theme) onServerDefaultTheme(res.default_theme)
   }
 
   useEffect(() => {
@@ -321,6 +334,37 @@ export default function App() {
               },
             ]}
           />
+          <Menu shadow="md" width={160} position="bottom-end">
+            <Menu.Target>
+              <Tooltip label="Color theme">
+                <ActionIcon variant="light" color="flame" size="lg" aria-label="Color theme">
+                  <IconPalette size={18} />
+                </ActionIcon>
+              </Tooltip>
+            </Menu.Target>
+            <Menu.Dropdown>
+              {THEME_NAMES.map((name) => (
+                <Menu.Item
+                  key={name}
+                  onClick={() => onThemeChange(name)}
+                  leftSection={
+                    <span
+                      style={{
+                        display: 'inline-block',
+                        width: 12,
+                        height: 12,
+                        borderRadius: '50%',
+                        background: THEMES[name].swatch,
+                      }}
+                    />
+                  }
+                  rightSection={name === themeName ? <IconCheck size={14} /> : null}
+                >
+                  {THEMES[name].label}
+                </Menu.Item>
+              ))}
+            </Menu.Dropdown>
+          </Menu>
           <Tooltip label="Refresh from NetBox">
             <ActionIcon
               variant="light"

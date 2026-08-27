@@ -1,58 +1,35 @@
-import time
+"""The signed-cookie mechanism itself (signing, expiry, remember-me) is
+tested in FireAuth's own suite (github.com/Fires04/FireAuth) — this file
+only covers what's actually ServersOnFire-specific: the password check and
+that auth.py wires up FireAuth's SessionAuth/OIDCClient correctly."""
+
+from fireauth import SessionAuth
 
 from app import auth
 
 
-class FakeResponse:
-    """Minimal stand-in for fastapi.Response — only what set_session_cookie/
-    clear_session_cookie call, so these tests don't need a real request/
-    response cycle to exercise the signing logic itself."""
-
-    def __init__(self):
-        self.cookies: dict[str, dict] = {}
-
-    def set_cookie(self, key, value, **kwargs):
-        self.cookies[key] = {"value": value, **kwargs}
-
-    def delete_cookie(self, key, **kwargs):
-        self.cookies.pop(key, None)
+def test_check_credentials_requires_both_to_match(monkeypatch):
+    monkeypatch.setattr(auth.config, "APP_USERNAME", "admin")
+    monkeypatch.setattr(auth.config, "APP_PASSWORD", "secret")
+    assert auth.check_credentials("admin", "secret") is True
+    assert auth.check_credentials("admin", "wrong") is False
+    assert auth.check_credentials("someone-else", "secret") is False
 
 
-def _cookie_value(remember: bool) -> str:
-    response = FakeResponse()
-    auth.set_session_cookie(response, remember=remember)
-    return response.cookies[auth.COOKIE_NAME]["value"]
+def test_session_is_a_fireauth_sessionauth_instance():
+    assert isinstance(auth.session, SessionAuth)
+    assert auth.session.cookie_name == "sof_session"
 
 
-def test_fresh_cookie_is_valid():
-    assert auth._cookie_valid(_cookie_value(remember=False)) is True
-    assert auth._cookie_valid(_cookie_value(remember=True)) is True
+def test_oidc_is_none_when_not_configured():
+    # conftest.py doesn't set any AUTHENTIK_* env vars, so config.OIDC_ENABLED
+    # is False and auth.py must not have built an OIDCClient.
+    assert auth.oidc is None
 
 
-def test_missing_or_tampered_cookie_is_invalid():
-    assert auth._cookie_valid(None) is False
-    assert auth._cookie_valid("") is False
-    assert auth._cookie_valid(_cookie_value(False) + "tampered") is False
-
-
-def test_expired_cookie_is_invalid(monkeypatch):
-    value = _cookie_value(remember=False)
-    # Jump past the unremembered window without waiting for it for real.
-    future = time.time() + auth.UNREMEMBERED_MAX_AGE + 1
-    monkeypatch.setattr(time, "time", lambda: future)
-    assert auth._cookie_valid(value) is False
-
-
-def test_remember_me_sets_a_persistent_cookie_max_age():
-    response = FakeResponse()
-    auth.set_session_cookie(response, remember=True)
-    assert response.cookies[auth.COOKIE_NAME]["max_age"] == auth.REMEMBERED_MAX_AGE
-
-
-def test_unremembered_login_is_a_session_cookie():
-    """No max_age at all (not even the short server-side window) — the
-    browser should drop it when it closes, same as before this feature
-    existed; the embedded expiry is just a server-side backstop."""
-    response = FakeResponse()
-    auth.set_session_cookie(response, remember=False)
-    assert response.cookies[auth.COOKIE_NAME]["max_age"] is None
+def test_is_logged_in_and_require_login_api_are_bound_to_the_session():
+    # Re-exported from auth.session so main.py's existing call sites don't
+    # need renaming — confirm they're actually the session's own bound
+    # methods, not accidentally something disconnected from it.
+    assert auth.is_logged_in.__self__ is auth.session
+    assert auth.require_login_api.__self__ is auth.session

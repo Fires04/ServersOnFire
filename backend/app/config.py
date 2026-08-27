@@ -22,3 +22,18 @@ APP_USERNAME = _require("APP_USERNAME") if REQUIRE_LOGIN else ""
 APP_PASSWORD = _require("APP_PASSWORD") if REQUIRE_LOGIN else ""
 SESSION_SECRET = _require("SESSION_SECRET") if REQUIRE_LOGIN else ""
 COOKIE_HTTPS_ONLY = os.environ.get("COOKIE_HTTPS_ONLY", "false").lower() == "true"
+
+# Optional: "Sign in with Authentik" alongside the password form (see
+# https://github.com/Fires04/FireAuth). All four must be set for it to
+# turn on — anything missing just means no OIDC button, password login
+# still works on its own. AUTHENTIK_REDIRECT_URI must exactly match what's
+# registered on the Authentik Provider (its own full URL, e.g.
+# "https://serversonfire.example.lan/auth/callback" — not derived/guessed
+# here since a mismatch is the single most common OIDC setup snag).
+AUTHENTIK_CLIENT_ID = os.environ.get("AUTHENTIK_CLIENT_ID", "")
+AUTHENTIK_CLIENT_SECRET = os.environ.get("AUTHENTIK_CLIENT_SECRET", "")
+AUTHENTIK_ISSUER = os.environ.get("AUTHENTIK_ISSUER", "")
+AUTHENTIK_REDIRECT_URI = os.environ.get("AUTHENTIK_REDIRECT_URI", "")
+OIDC_ENABLED = REQUIRE_LOGIN and all(
+    [AUTHENTIK_CLIENT_ID, AUTHENTIK_CLIENT_SECRET, AUTHENTIK_ISSUER, AUTHENTIK_REDIRECT_URI]
+)

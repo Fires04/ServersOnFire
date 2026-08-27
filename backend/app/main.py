@@ -3,10 +3,11 @@ import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import Form, Request
+from fastapi import Request
 from fastapi import FastAPI
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from fireauth import build_auth_router
 
 from . import auth, config, netbox, quicklinks
 
@@ -51,6 +52,21 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+if config.OIDC_ENABLED:
+    # authlib's Starlette client needs request.session to stash the OAuth
+    # state/nonce for the few seconds between the /auth/login redirect and
+    # the /auth/callback — unrelated to (and much narrower than) the "why
+    # not SessionMiddleware for real login sessions" problem FireAuth's
+    # SessionAuth exists to avoid (see auth.py): a fixed 10-minute Max-Age
+    # is fine for a handshake that only ever takes seconds, and a random
+    # secret regenerated on every restart is fine since nothing needs it
+    # to survive one.
+    import os
+
+    from starlette.middleware.sessions import SessionMiddleware
+
+    app.add_middleware(SessionMiddleware, secret_key=os.urandom(32).hex(), max_age=600)
+
 # Explicit routes, not a StaticFiles mount, specifically so these two
 # hand-written files (edited far more often than they're deployed) can
 # carry a no-store header — a stale cached copy of either previously left
@@ -69,31 +85,36 @@ if (DIST_DIR / "assets").is_dir():
     app.mount("/assets", StaticFiles(directory=DIST_DIR / "assets"), name="assets")
 
 
+# Login/logout (+ /auth/login, /auth/callback if OIDC_ENABLED) come from
+# FireAuth's router factory — see auth.py for the SessionAuth/OIDCClient
+# instances it's built from. Only the GET /login page (the actual HTML,
+# branded per-app) stays here.
 if config.REQUIRE_LOGIN:
+    app.include_router(
+        build_auth_router(
+            auth.session,
+            check_password=auth.check_credentials,
+            oidc=auth.oidc,
+        )
+    )
+
+    _LOGIN_HTML = (LOGIN_STATIC_DIR / "login.html").read_text()
+    # Swapped in only when Authentik is actually configured (see
+    # config.OIDC_ENABLED) — a button pointing at a route that doesn't
+    # exist would just 404.
+    _OIDC_BUTTON_HTML = """
+      <a class="oidc-button" href="/auth/login">Sign in with Authentik</a>
+      <div class="divider"><span>or</span></div>
+    """
 
     @app.get("/login", response_class=HTMLResponse)
     async def login_page(request: Request):
         if auth.is_logged_in(request):
             return RedirectResponse(url="/", status_code=302)
-        return FileResponse(LOGIN_STATIC_DIR / "login.html", headers=NO_STORE)
-
-    @app.post("/login")
-    async def login_submit(
-        username: str = Form(...),
-        password: str = Form(...),
-        remember: str | None = Form(None),
-    ):
-        if auth.check_credentials(username, password):
-            response = RedirectResponse(url="/", status_code=302)
-            auth.set_session_cookie(response, remember=bool(remember))
-            return response
-        return RedirectResponse(url="/login?error=1", status_code=302)
-
-    @app.get("/logout")
-    async def logout():
-        response = RedirectResponse(url="/login", status_code=302)
-        auth.clear_session_cookie(response)
-        return response
+        html = _LOGIN_HTML.replace(
+            "<!-- OIDC_BUTTON -->", _OIDC_BUTTON_HTML if config.OIDC_ENABLED else ""
+        )
+        return HTMLResponse(html, headers=NO_STORE)
 
 
 @app.get("/", response_class=HTMLResponse)

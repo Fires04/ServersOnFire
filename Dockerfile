@@ -27,6 +27,11 @@ RUN TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0") \
 FROM python:3.12-slim AS runtime
 WORKDIR /app
 
+# git: pyproject.toml depends on fireauth straight from its GitHub repo
+# (git+https://...) — pip needs the actual git binary to clone a VCS
+# dependency, which python:3.12-slim doesn't ship.
+RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
+
 COPY --from=gitinfo /version.txt /version.txt
 COPY backend/ ./
 # `-e` (editable), not a regular install: a regular `pip install .` copies

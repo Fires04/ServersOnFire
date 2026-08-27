@@ -123,3 +123,34 @@ body {
   border-radius: 8px;
   font-size: 0.9rem;
 }
+
+/* Only rendered when Authentik is actually configured (see main.py's
+   _OIDC_BUTTON_HTML substitution) — outlined rather than filled so it
+   doesn't compete with the password form's own submit button for
+   attention. */
+.oidc-button {
+  display: block;
+  text-align: center;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text);
+  text-decoration: none;
+}
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}

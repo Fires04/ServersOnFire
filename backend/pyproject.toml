@@ -7,8 +7,11 @@ dependencies = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.30",
     "httpx>=0.27",
-    "itsdangerous>=2.2",
     "python-multipart>=0.0.9",
+    # Shared signed-cookie session + optional Authentik/OIDC login — see
+    # https://github.com/Fires04/FireAuth. Pin to a tag once one exists;
+    # branch head is fine while both repos are this new.
+    "fireauth[oidc] @ git+https://github.com/Fires04/FireAuth.git",
 ]
 
 [project.optional-dependencies]

@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fireauth import build_auth_router
+from fireauth.csrf import generate_token, set_csrf_cookie
 
 from . import auth, config, netbox, quicklinks
 
@@ -109,6 +110,15 @@ if config.REQUIRE_LOGIN:
             auth.session,
             check_password=auth.check_credentials,
             oidc=auth.oidc,
+            # SECURITY-CRITICAL: without this, a valid Authentik login from
+            # *any* account on the shared instance would authenticate as
+            # this app's single operator (see config.APP_EMAIL's comment
+            # and FireAuth's "Pattern A + OIDC binding" fix, 2026-08-27).
+            # None whenever OIDC isn't configured at all — harmless, since
+            # build_auth_router only registers /auth/* routes `if oidc:`.
+            allowed_email=config.APP_EMAIL or None,
+            app_name="serversonfire",  # turns on stdout login-attempt logging
+            app=app,  # turns on per-IP rate limiting on POST /login
         )
     )
 
@@ -128,7 +138,16 @@ if config.REQUIRE_LOGIN:
         html = _LOGIN_HTML.replace(
             "<!-- OIDC_BUTTON -->", _OIDC_BUTTON_HTML if config.OIDC_ENABLED else ""
         )
-        return HTMLResponse(html, headers=NO_STORE)
+        # CSRF (FireAuth's POST /login now always enforces it, no opt-out,
+        # see fireauth/csrf.py): generate the token before the response
+        # object exists so it can go straight into the HTML body, then
+        # attach the matching cookie to that same response — a mismatch
+        # between the two is exactly what verify_csrf_token() rejects.
+        token = generate_token()
+        html = html.replace("__CSRF_TOKEN__", token)
+        response = HTMLResponse(html, headers=NO_STORE)
+        set_csrf_cookie(response, token, https_only=config.COOKIE_HTTPS_ONLY)
+        return response
 
 
 @app.get("/", response_class=HTMLResponse)

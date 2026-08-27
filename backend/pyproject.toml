@@ -11,7 +11,7 @@ dependencies = [
     # Shared signed-cookie session + optional Authentik/OIDC login — see
     # https://github.com/Fires04/FireAuth. Pin to a tag once one exists;
     # branch head is fine while both repos are this new.
-    "fireauth[oidc] @ git+https://github.com/Fires04/FireAuth.git",
+    "fireauth[oidc,ratelimit] @ git+https://github.com/Fires04/FireAuth.git",
 ]
 
 [project.optional-dependencies]

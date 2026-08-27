@@ -24,18 +24,32 @@ SESSION_SECRET = _require("SESSION_SECRET") if REQUIRE_LOGIN else ""
 COOKIE_HTTPS_ONLY = os.environ.get("COOKIE_HTTPS_ONLY", "false").lower() == "true"
 
 # Optional: "Sign in with Authentik" alongside the password form (see
-# https://github.com/Fires04/FireAuth). All four must be set for it to
-# turn on — anything missing just means no OIDC button, password login
-# still works on its own. AUTHENTIK_REDIRECT_URI must exactly match what's
-# registered on the Authentik Provider (its own full URL, e.g.
+# https://github.com/Fires04/FireAuth). All five (including APP_EMAIL just
+# below) must be set for it to turn on — anything missing just means no
+# OIDC button, password login still works on its own.
+# AUTHENTIK_REDIRECT_URI must exactly match what's registered on the
+# Authentik Provider (its own full URL, e.g.
 # "https://serversonfire.example.lan/auth/callback" — not derived/guessed
 # here since a mismatch is the single most common OIDC setup snag).
 AUTHENTIK_CLIENT_ID = os.environ.get("AUTHENTIK_CLIENT_ID", "")
 AUTHENTIK_CLIENT_SECRET = os.environ.get("AUTHENTIK_CLIENT_SECRET", "")
 AUTHENTIK_ISSUER = os.environ.get("AUTHENTIK_ISSUER", "")
 AUTHENTIK_REDIRECT_URI = os.environ.get("AUTHENTIK_REDIRECT_URI", "")
+
+# SECURITY-CRITICAL (see FireAuth's "Pattern A + OIDC binding", 2026-08-27
+# fix): ServersOnFire is a single shared-credential app, no user database
+# — without this, a successful Authentik login would authenticate as this
+# app's operator *regardless of which Authentik account it was*. Deliberately
+# a separate value from APP_USERNAME rather than reusing FireAuth's own
+# recommended "APP_EMAIL doubles as the login username" pattern — changing
+# the existing password-login username wasn't asked for, and bundling it
+# into this security fix would be an unrelated breaking change. This value
+# only feeds the OIDC identity check (fireauth's `allowed_email`); the
+# password form's username field is untouched.
+APP_EMAIL = os.environ.get("APP_EMAIL", "")
+
 OIDC_ENABLED = REQUIRE_LOGIN and all(
-    [AUTHENTIK_CLIENT_ID, AUTHENTIK_CLIENT_SECRET, AUTHENTIK_ISSUER, AUTHENTIK_REDIRECT_URI]
+    [AUTHENTIK_CLIENT_ID, AUTHENTIK_CLIENT_SECRET, AUTHENTIK_ISSUER, AUTHENTIK_REDIRECT_URI, APP_EMAIL]
 )
 
 # Color theme (see frontend/src/lib/themes.ts for the full 10-shade ramps

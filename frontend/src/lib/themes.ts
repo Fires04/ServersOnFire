@@ -10,6 +10,15 @@ export interface ThemeDef {
    * existing `color="flame"` reference in the app keeps working unchanged,
    * it's just backed by a different 10-shade ramp per theme. */
   flame: MantineColorsTuple
+  /** Overrides Mantine's own "dark" palette — this is what actually drives
+   * the page/card backgrounds, borders, and muted text in dark mode
+   * (Mantine's `--mantine-color-body`, Card surfaces, etc. all come from
+   * here, not from "flame"). Without this, switching themes only ever
+   * recolored accented bits (buttons, active borders) while the neutral
+   * chrome around them stayed the same gray for every theme — a hue-
+   * biased neutral ramp per theme is what makes it read as a real reskin
+   * instead of "some badges changed color". */
+  dark: MantineColorsTuple
   /** Low-alpha accent used for index.css's body background glow. */
   glow: string
   /** Topology view keeps its own fixed dark canvas regardless of the app's
@@ -38,6 +47,18 @@ export const THEMES: Record<ThemeName, ThemeDef> = {
       '#0f77a1',
       '#0a5c7e',
     ],
+    dark: [
+      '#c8d3de',
+      '#aab7c4',
+      '#8d9baa',
+      '#5c6b7c',
+      '#3c4a5c',
+      '#2c3947',
+      '#212d3a',
+      '#17212c',
+      '#101822',
+      '#0a1119',
+    ],
     glow: 'rgba(53, 197, 240, 0.16)',
     topoBg: '#0a0e16',
     topoSurface: '#141b2c',
@@ -57,6 +78,18 @@ export const THEMES: Record<ThemeName, ThemeDef> = {
       '#7440d6',
       '#5f30b0',
       '#4a2389',
+    ],
+    dark: [
+      '#d4cede',
+      '#b6adc4',
+      '#9a8fac',
+      '#6b6080',
+      '#4a4160',
+      '#392f4d',
+      '#2a2239',
+      '#1e1830',
+      '#150f24',
+      '#0e0a1a',
     ],
     glow: 'rgba(157, 107, 255, 0.16)',
     topoBg: '#0e0b1a',
@@ -78,6 +111,18 @@ export const THEMES: Record<ThemeName, ThemeDef> = {
       '#8a4b1f',
       '#6c3a18',
     ],
+    dark: [
+      '#ddd2c4',
+      '#c2b2a0',
+      '#a8937d',
+      '#7a6552',
+      '#5a4638',
+      '#443528',
+      '#33271b',
+      '#251b12',
+      '#1c130c',
+      '#130d07',
+    ],
     glow: 'rgba(214, 138, 76, 0.16)',
     topoBg: '#151109',
     topoSurface: '#221a10',
@@ -97,6 +142,18 @@ export const THEMES: Record<ThemeName, ThemeDef> = {
       '#3a4fc7',
       '#2f3fa0',
       '#25317c',
+    ],
+    dark: [
+      '#cdced3',
+      '#b0b2b8',
+      '#94969d',
+      '#62646c',
+      '#46484f',
+      '#34363c',
+      '#27282d',
+      '#1c1d21',
+      '#17181c',
+      '#101114',
     ],
     glow: 'rgba(91, 124, 250, 0.16)',
     topoBg: '#101114',

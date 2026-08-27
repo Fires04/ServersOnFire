@@ -7,7 +7,7 @@ import { THEMES, type ThemeName } from './lib/themes'
 export function buildTheme(name: ThemeName) {
   return createTheme({
     primaryColor: 'flame',
-    colors: { flame: THEMES[name].flame },
+    colors: { flame: THEMES[name].flame, dark: THEMES[name].dark },
     defaultRadius: 'md',
     fontFamily:
       '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',

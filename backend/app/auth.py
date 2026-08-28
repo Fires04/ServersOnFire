@@ -23,10 +23,10 @@ if config.OIDC_ENABLED:
 
     oidc = OIDCClient(
         OIDCConfig(
-            client_id=config.AUTHENTIK_CLIENT_ID,
-            client_secret=config.AUTHENTIK_CLIENT_SECRET,
-            issuer=config.AUTHENTIK_ISSUER,
-            redirect_uri=config.AUTHENTIK_REDIRECT_URI,
+            client_id=config.OIDC_CLIENT_ID,
+            client_secret=config.OIDC_CLIENT_SECRET,
+            issuer=config.OIDC_ISSUER,
+            redirect_uri=config.OIDC_REDIRECT_URI,
         )
     )
 

@@ -27,14 +27,19 @@ COOKIE_HTTPS_ONLY = os.environ.get("COOKIE_HTTPS_ONLY", "false").lower() == "tru
 # https://github.com/Fires04/FireAuth). All five (including APP_EMAIL just
 # below) must be set for it to turn on — anything missing just means no
 # OIDC button, password login still works on its own.
-# AUTHENTIK_REDIRECT_URI must exactly match what's registered on the
-# Authentik Provider (its own full URL, e.g.
+# Names are OIDC_* (not AUTHENTIK_*) per PROJECT_STANDARDS.md's
+# 2026-08-28 naming unification — the underlying IdP is Authentik today,
+# but the var names describe the OIDC integration point generically, and
+# projects in this family had drifted between AUTHENTIK_*/OIDC_*
+# inconsistently before this was fixed.
+# OIDC_REDIRECT_URI must exactly match what's registered on the Authentik
+# Provider (its own full URL, e.g.
 # "https://serversonfire.example.lan/auth/callback" — not derived/guessed
 # here since a mismatch is the single most common OIDC setup snag).
-AUTHENTIK_CLIENT_ID = os.environ.get("AUTHENTIK_CLIENT_ID", "")
-AUTHENTIK_CLIENT_SECRET = os.environ.get("AUTHENTIK_CLIENT_SECRET", "")
-AUTHENTIK_ISSUER = os.environ.get("AUTHENTIK_ISSUER", "")
-AUTHENTIK_REDIRECT_URI = os.environ.get("AUTHENTIK_REDIRECT_URI", "")
+OIDC_CLIENT_ID = os.environ.get("OIDC_CLIENT_ID", "")
+OIDC_CLIENT_SECRET = os.environ.get("OIDC_CLIENT_SECRET", "")
+OIDC_ISSUER = os.environ.get("OIDC_ISSUER", "")
+OIDC_REDIRECT_URI = os.environ.get("OIDC_REDIRECT_URI", "")
 
 # SECURITY-CRITICAL (see FireAuth's "Pattern A + OIDC binding", 2026-08-27
 # fix): ServersOnFire is a single shared-credential app, no user database
@@ -49,7 +54,7 @@ AUTHENTIK_REDIRECT_URI = os.environ.get("AUTHENTIK_REDIRECT_URI", "")
 APP_EMAIL = os.environ.get("APP_EMAIL", "")
 
 OIDC_ENABLED = REQUIRE_LOGIN and all(
-    [AUTHENTIK_CLIENT_ID, AUTHENTIK_CLIENT_SECRET, AUTHENTIK_ISSUER, AUTHENTIK_REDIRECT_URI, APP_EMAIL]
+    [OIDC_CLIENT_ID, OIDC_CLIENT_SECRET, OIDC_ISSUER, OIDC_REDIRECT_URI, APP_EMAIL]
 )
 
 # Color theme (see frontend/src/lib/themes.ts for the full 10-shade ramps

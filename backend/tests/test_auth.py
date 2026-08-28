@@ -22,7 +22,7 @@ def test_session_is_a_fireauth_sessionauth_instance():
 
 
 def test_oidc_is_none_when_not_configured():
-    # conftest.py doesn't set any AUTHENTIK_* env vars, so config.OIDC_ENABLED
+    # conftest.py doesn't set any OIDC_* env vars, so config.OIDC_ENABLED
     # is False and auth.py must not have built an OIDCClient.
     assert auth.oidc is None
 
